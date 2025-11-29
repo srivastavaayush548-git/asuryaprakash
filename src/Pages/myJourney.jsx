@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { myJourneyContent } from '../Data/myJourney';
+import journeyBg from '../assets/journey-bg.jpg';
 
 const MyJourney = () => {
   const [hoveredIndex, setHoveredIndex] = useState(null);
@@ -10,7 +11,7 @@ const MyJourney = () => {
       <div
         className="fixed inset-0 top-12 -z-10"
         style={{
-          backgroundImage: "url('/src/assets/journey-bg.jpg')",
+          backgroundImage: `url(${journeyBg})`,
           backgroundSize: '100% 100%',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'
