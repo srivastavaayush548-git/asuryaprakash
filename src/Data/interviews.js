@@ -1,6 +1,6 @@
 export const categorizedInterviews = [
   {
-    category: "Constitution, Emergency & Democracy",
+    category: "Constitution, Democracy & Emergency",
     videos: [
       {
         id: "qH8E5hAMjBs",

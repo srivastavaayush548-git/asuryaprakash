@@ -101,9 +101,7 @@ const Career = () => {
         </div>
 
         <div className={`transition-all duration-1000 ease-out transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-          <div className="inline-block mb-4 px-3 py-1 border border-red-800/30 rounded-full bg-red-50 text-red-900 text-xs md:text-sm font-medium tracking-widest uppercase">
-            Professional Journey
-          </div>
+          
           <h1 className="text-6xl md:text-8xl lg:text-9xl font-serif font-bold text-stone-900 tracking-tight mb-6">
             Career <span className="text-red-800">Path</span>
           </h1>
@@ -139,7 +137,7 @@ const Career = () => {
           </div>
           <div className="md:col-span-7 space-y-6 text-lg text-stone-600 leading-relaxed">
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-900 mb-6">
-              A Legacy of <span className="underline decoration-red-800/30 decoration-4 underline-offset-4">Leadership</span>
+              Professional <span className="underline decoration-red-800/30 decoration-4 underline-offset-4">Journey</span>
             </h2>
             <p>
               Throughout his career, A. Surya Prakash has demonstrated exceptional editorial leadership across print, broadcast, and digital media platforms. His roles have consistently focused on maintaining journalistic integrity while navigating the complex landscape of Indian politics and governance.
