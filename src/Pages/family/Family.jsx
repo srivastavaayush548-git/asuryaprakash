@@ -1,6 +1,6 @@
 import React from 'react';
 import { familyData } from '../../Data/family';
-import ImageGroupGallery from '../../Components/ImageGroupGallery';
+import ImageGallery from '../../Components/ImageGallery';
 
 const Family = () => {
   return (
@@ -25,10 +25,27 @@ const Family = () => {
           </div>
         </div>
       </div>
-      {/* --- Gallery Section --- */}
-      <section className="py-20 max-w-7xl mx-auto px-6 relative z-10">
-        <ImageGroupGallery groups={familyData} customGridCols="grid-cols-1 md:grid-cols-2" />
-      </section>
+      {/* --- Gallery Sections --- */}
+      <div className="relative z-10 pb-20">
+        {familyData.map((group, groupIndex) => (
+          <section key={group.id || groupIndex} className="py-16 max-w-7xl mx-auto px-6">
+            <div className="text-center mb-12">
+              <div className="inline-block mb-3 px-3 py-1 border border-red-800/30 rounded-full bg-red-50 text-red-800 text-xs font-bold uppercase tracking-wider">
+                Family Collection
+              </div>
+              <h2 className="text-3xl md:text-5xl font-serif font-bold text-stone-900 mb-4">
+                {group.title}
+              </h2>
+              <div className="w-24 h-1 bg-red-800 mx-auto rounded-full opacity-20"></div>
+            </div>
+
+            <ImageGallery 
+              images={group.images} 
+              customGridCols="grid-cols-1 md:grid-cols-2 lg:grid-cols-3" 
+            />
+          </section>
+        ))}
+      </div>
     </div>
   );
 };

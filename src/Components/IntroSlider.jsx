@@ -127,23 +127,24 @@ const IntroSlider = ({ onComplete }) => {
           if (index !== currentIndex) return null;
 
           return (
-            <div key={index} className="absolute inset-0 w-full h-full animate-fade-in">
+            <div key={index} className="absolute inset-0 w-full h-full animate-fade-in flex items-center justify-center bg-black">
               {slide.type === 'video' ? (
                      <video
                        ref={videoRef}
                        src={slide.src}
-                       className="w-full h-full object-contain"
+                       className="max-w-full max-h-full object-contain"
                        muted={isMuted} // Controlled by state, but starts 'false' (unmuted)
                        playsInline
                        onEnded={handleNext}
                      />
               ) : (
-                <div className="w-full h-full relative">
-                  <div className="absolute inset-0 bg-black/30 z-10" /> {/* Overlay */}
-                  <img src={slide.src} alt="Slide" className="w-full h-full object-contain animate-slow-zoom" />
+                <div className="w-full h-full relative flex items-center justify-center">
+                  <div className="absolute inset-0 bg-black/20 z-10" /> {/* Overlay */}
+                  <img src={slide.src} alt="Slide" className="max-w-full max-h-full object-contain" />
                   {slide.caption && (
-                    <div className="absolute bottom-24 left-10 z-20 max-w-2xl">
-                       <h2 className="text-4xl md:text-6xl font-serif font-bold leading-tight opacity-0 animate-slide-up-fade" style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}>
+                    <div className="absolute bottom-24 left-10 z-20 max-w-2xl px-6 border-l-4 border-red-800">
+                       <h2 className="text-4xl md:text-6xl font-serif font-bold leading-tight opacity-0 animate-slide-up-fade text-white drop-shadow-lg" style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}>
+                          {slide.caption}
                        </h2>
                     </div>
                   )}
@@ -160,13 +161,6 @@ const IntroSlider = ({ onComplete }) => {
       
       {/* Styles for animations */}
       <style jsx>{`
-        @keyframes slow-zoom {
-          from { transform: scale(1); }
-          to { transform: scale(1.1); }
-        }
-        .animate-slow-zoom {
-          animation: slow-zoom 10s linear forwards;
-        }
         @keyframes slide-up-fade {
           from { transform: translateY(20px); opacity: 0; }
           to { transform: translateY(0); opacity: 1; }
@@ -179,7 +173,7 @@ const IntroSlider = ({ onComplete }) => {
             to { opacity: 1; }
         }
         .animate-fade-in {
-            animation: fade-in 0.5s ease-out forwards;
+            animation: fade-in 0.8s ease-out forwards;
         }
       `}</style>
     </div>

@@ -22,7 +22,6 @@ import familyCoverImg from '../assets/Images/Family/familycover.jpeg';
 import sonAndDaughterInLawImg2 from '../assets/Images/Family/sonand dougtherinlaw2.jpeg';
 import wifeImg7 from '../assets/Images/Family/withwife7.jpeg';
 import wifeImg9 from '../assets/Images/Family/withwife9.jpeg';
-import whatsappImg7 from '../assets/Images/Family/WhatsApp Image 2026-01-07 at 6.54.34 PM (7).jpeg';
 
 
 
@@ -35,7 +34,6 @@ export const familyData = [
       { id: 21, src: familyCoverImg, alt: "Family portrait", title: "Family portrait" },
       { id: 20, src: family2Img, alt: "Family gathering", title: "Family gathering" },
       { id: 16, src: siblingsImg, alt: "With my siblings", title: "With my siblings" },
-      { id: 24, src: whatsappImg7, alt: "Family memory", title: "Family memory" },
     ]
   },
   {
