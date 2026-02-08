@@ -141,13 +141,6 @@ const IntroSlider = ({ onComplete }) => {
                 <div className="w-full h-full relative flex items-center justify-center">
                   <div className="absolute inset-0 bg-black/20 z-10" /> {/* Overlay */}
                   <img src={slide.src} alt="Slide" className="max-w-full max-h-full object-contain" />
-                  {slide.caption && (
-                    <div className="absolute bottom-24 left-10 z-20 max-w-2xl px-6 border-l-4 border-red-800">
-                       <h2 className="text-4xl md:text-6xl font-serif font-bold leading-tight opacity-0 animate-slide-up-fade text-white drop-shadow-lg" style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}>
-                          {slide.caption}
-                       </h2>
-                    </div>
-                  )}
                 </div>
               )}
             </div>
