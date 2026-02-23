@@ -1,6 +1,6 @@
 import rajyotsavaImg1 from '../assets/Images/awards/rajyotsav .jpg';
 import rajyotsavaCitation from '../assets/Images/awards/rajoyotasava.jpg';
-import dlit2 from '../assets/Images/awards/D.Litt/dlt(2).jpeg';
+import dlit2 from '../assets/Images/awards/D.litt/dlt(2).jpeg';
 
 export const awardsData = [
   {
