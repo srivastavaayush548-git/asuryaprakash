@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const MediaItemSchema = new mongoose.Schema({
     title: {
         type: String,
-        required: true,
         trim: true
     },
     description: {
@@ -16,8 +15,7 @@ const MediaItemSchema = new mongoose.Schema({
         default: "image"
     },
     src: {
-        type: String,
-        required: true
+        type: String
     },
     thumbnail: {
         type: String
@@ -31,7 +29,6 @@ const MediaItemSchema = new mongoose.Schema({
 const MediaSectionSchema = new mongoose.Schema({
     title: {
         type: String,
-        required: true,
         trim: true
     },
     media: [MediaItemSchema],

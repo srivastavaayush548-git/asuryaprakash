@@ -4,7 +4,6 @@ const MediaSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: true,
       trim: true,
     },
     description: {
@@ -18,7 +17,6 @@ const MediaSchema = new mongoose.Schema(
     },
     src: {
       type: String, // Base64 or URL
-      required: true,
     },
     thumbnail: {
       type: String, // Base64 or URL, optional

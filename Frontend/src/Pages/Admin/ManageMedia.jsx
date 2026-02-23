@@ -44,18 +44,14 @@ const ManageMedia = () => {
   };
 
   const handleAddSection = () => {
-    if (newSectionTitle.trim()) {
-      addMediaSection(newSectionTitle);
-      setNewSectionTitle('');
-      setIsAddingSection(false);
-    }
+    addMediaSection(newSectionTitle || 'Untitled Section');
+    setNewSectionTitle('');
+    setIsAddingSection(false);
   };
 
   const handleSaveSectionTitle = (sectionId) => {
-    if (editingSectionTitle.trim()) {
-      updateMediaSection(sectionId, editingSectionTitle);
-      setEditingSectionId(null);
-    }
+    updateMediaSection(sectionId, editingSectionTitle || 'Untitled Section');
+    setEditingSectionId(null);
   };
 
   const resetMediaForm = () => {
@@ -105,7 +101,8 @@ const ManageMedia = () => {
   };
 
   const handleMediaSave = async (sectionId) => {
-    if (!mediaForm.title || !mediaForm.src) return alert('Title and Media are required');
+    // Removal of strict validation as per user request to make title and all items optional
+    // if (!mediaForm.title || !mediaForm.src) return alert('Title and Media are required');
     
     try {
       setLoading(true);
@@ -225,7 +222,7 @@ const ManageMedia = () => {
                 </div>
               ) : (
                 <div className="flex-1 flex items-center gap-2 group">
-                  <h3 className="text-xl font-serif font-bold text-stone-800">{section.title}</h3>
+                  <h3 className="text-xl font-serif font-bold text-stone-800">{section.title || 'Untitled Section'}</h3>
                   <button 
                     onClick={() => {
                       setEditingSectionId(section._id);
@@ -453,7 +450,7 @@ const ManageMedia = () => {
                         <div className="p-3">
                            <div className="flex items-center gap-2">
                               <div className="flex-1 min-w-0">
-                                 <h5 className="font-bold text-sm text-stone-900 truncate">{item.title}</h5>
+                                 <h5 className="font-bold text-sm text-stone-900 truncate">{item.title || 'Untitled Media'}</h5>
                                  <span className="text-[10px] text-stone-500 uppercase font-bold">{item.type}</span>
                               </div>
                               <div className="flex items-center gap-1 bg-stone-50 px-2 py-1 rounded-lg border border-stone-200">
