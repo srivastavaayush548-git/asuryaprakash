@@ -4,6 +4,16 @@ import { X, Maximize2 } from 'lucide-react';
 import invitationImg from '../assets/invitation.png';
 import bookNewsImg from '../assets/booknews.png';
 
+// Import Book Invitation (bi) images
+import bi1 from '../assets/Images/Books/bi/bi(1).jpeg';
+import bi2 from '../assets/Images/Books/bi/bi(2).jpeg';
+import bi3 from '../assets/Images/Books/bi/bi(3).jpeg';
+import bi4 from '../assets/Images/Books/bi/bi(4).jpeg';
+
+// Import Book Review (Br) images
+import br1 from '../assets/Images/Books/Br/br(1).jpeg';
+import br2 from '../assets/Images/Books/Br/br(2).jpeg';
+
 const Books = () => {
   const [selectedImage, setSelectedImage] = useState(null);
 
@@ -18,8 +28,8 @@ const Books = () => {
     };
   }, [selectedImage]);
 
-  const invitationImages = [invitationImg];
-  const reviewImages = [bookNewsImg];
+  const invitationImages = [invitationImg, bi1, bi2, bi3, bi4];
+  const reviewImages = [bookNewsImg, br1, br2];
 
   return (
     <div className="min-h-screen bg-linear-to-br from-orange-200 via-yellow-200 to-orange-100 text-stone-800 font-sans selection:bg-red-100 pt-24">
