@@ -15,8 +15,8 @@ const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.json({ limit: '50mb' })); // Increased limit for base64 images
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json({ limit: '100mb' })); // Increased limit for base64 media
+app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
 // Routes
 app.use('/api/articles', articleRoutes);

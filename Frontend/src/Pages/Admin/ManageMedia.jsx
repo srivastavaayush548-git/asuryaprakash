@@ -83,8 +83,8 @@ const ManageMedia = () => {
   const handleFileChange = (e, field) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024 && field === 'src' && mediaForm.type === 'video') {
-         alert('File size too large. Please keep it under 10MB or use a URL.');
+      if (file.size > 50 * 1024 * 1024 && field === 'src' && mediaForm.type === 'video') {
+         alert('File size too large. Please keep it under 50MB or use a URL.');
       }
       const reader = new FileReader();
       reader.onloadend = () => {
