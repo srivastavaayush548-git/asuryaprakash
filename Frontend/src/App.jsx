@@ -15,6 +15,7 @@ import PrivacyPolicy from './Pages/Privacy'
 import TermsAndConditions from './Pages/termsAndConditions'
 import AwardsIndex from './Pages/awards/index'
 import AdminPanel from './Pages/Admin/AdminPanel'
+import Media from './Pages/media'
 
 import Footer from './Components/Footer'
 import ScrollToTop from './Components/ScrollToTop'
@@ -41,6 +42,7 @@ const AppContent = () => {
         <Route path="/gallery" element={<VIPs />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+        <Route path="/media" element={<Media />} />
         
         <Route path="/admin" element={<AdminPanel />} />
       </Routes>

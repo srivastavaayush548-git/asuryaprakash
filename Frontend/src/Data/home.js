@@ -17,7 +17,13 @@ export const homeMenu = [
   { label: 'Books', path: '/books' },
   { label: "Gallery", path: '/gallery' },
   { label: 'Family', path: '/family' },
+
+  {
+    label: "Media",
+    path: "/media"
+  }
 ];
+
 
 export const homeSocialLinks = [
   { id: 'facebook', label: 'Facebook', href: '#' },

@@ -5,7 +5,7 @@ import int1 from '../assets/Intro/intro1.jpg';
 import int2 from '../assets/Intro/intro2.jpeg';
 import int3 from '../assets/Intro/intro3.jpeg';
 
-const CLOUDINARY_VIDEO_URL = "https://res.cloudinary.com/vipinyadav01/video/upload/v1770013829/gfe7mxostddnr3wicjam.mp4";
+const CLOUDINARY_VIDEO_URL = "https://res.cloudinary.com/vipinyadav01/video/upload/v1771820579/icmu054rr4u9lrj5f41g.mp4";
 
 const SLIDES = [
   {
