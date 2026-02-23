@@ -5,10 +5,17 @@ import { X, BookOpen, ExternalLink } from 'lucide-react';
 import { nonFictionBooks } from '../Data/books';
 import IntroSlider from './IntroSlider';
 
+// Module-level variable to track intro playback across navigation
+let hasShownIntro = false;
 
 const HomeLayout = () => {
   const [selectedImage, setSelectedImage] = useState(null);
-  const [showIntro, setShowIntro] = useState(true);
+  const [showIntro, setShowIntro] = useState(!hasShownIntro);
+
+  const handleIntroComplete = () => {
+    hasShownIntro = true;
+    setShowIntro(false);
+  };
 
   // Get featured books based on specific titles requested (Show only 3, in specific order)
   const featuredBooks = [
@@ -53,10 +60,10 @@ const HomeLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-200 via-yellow-200 to-orange-100 bg-cover bg-center font-sans selection:bg-red-100">
+    <div className="min-h-screen bg-linear-to-br from-orange-200 via-yellow-200 to-orange-100 bg-cover bg-center font-sans selection:bg-red-100">
       {/* Intro Slider Overlay */}
       {showIntro && (
-        <IntroSlider onComplete={() => setShowIntro(false)} />
+        <IntroSlider onComplete={handleIntroComplete} />
       )}
 
       {/* --- Hero Section --- */}
