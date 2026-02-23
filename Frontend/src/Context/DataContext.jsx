@@ -250,60 +250,111 @@ export const DataProvider = ({ children }) => {
   };
 
   // Media CRUD
-  const saveMedia = async (media) => {
+  const addMediaSection = async (title) => {
     try {
-      const res = await api.post('/media', media);
-      const id = media.id || media._id;
-      if (id) {
-        setMediaData(mediaData.map(m => m._id === id ? res.data : m));
-      } else {
-        setMediaData([...mediaData, res.data]);
-      }
-      return res.data;
+      const res = await api.post('/media/sections', { title, order: mediaData.length });
+      setMediaData([...mediaData, res.data]);
     } catch (error) {
-      console.error('Error saving media:', error);
-      throw error;
+      console.error('Error adding media section:', error);
     }
   };
 
-  const deleteMedia = async (id) => {
+  const updateMediaSection = async (sectionId, title) => {
     try {
-      await api.delete(`/media/${id}`);
-      setMediaData(mediaData.filter(m => m._id !== id));
+      const res = await api.put(`/media/sections/${sectionId}`, { title });
+      setMediaData(mediaData.map(sec => sec._id === sectionId ? res.data : sec));
     } catch (error) {
-      console.error('Error deleting media:', error);
+      console.error('Error updating media section:', error);
     }
   };
 
-  const moveMedia = async (index, direction) => {
+  const deleteMediaSection = async (sectionId) => {
+    try {
+      await api.delete(`/media/sections/${sectionId}`);
+      setMediaData(mediaData.filter(sec => sec._id !== sectionId));
+    } catch (error) {
+      console.error('Error deleting media section:', error);
+    }
+  };
+
+  const moveMediaSection = async (index, direction) => {
     const newMedia = [...mediaData];
     const targetIndex = index + direction;
     if (targetIndex >= 0 && targetIndex < newMedia.length) {
       [newMedia[index], newMedia[targetIndex]] = [newMedia[targetIndex], newMedia[index]];
-      setMediaData(newMedia);
       
-      const updatedOrders = newMedia.map((item, idx) => ({ id: item._id, order: idx }));
+      const updatedOrders = newMedia.map((sec, idx) => ({ id: sec._id, order: idx }));
       try {
-        await api.put('/media/order', { items: updatedOrders });
+        setMediaData(newMedia);
+        await api.put('/media/sections/order', { sections: updatedOrders });
       } catch (error) {
-        console.error('Error updating media order:', error);
+        console.error('Error updating media section order:', error);
+        fetchData();
       }
     }
   };
 
-  const reorderMedia = async (oldIndex, newIndex) => {
-    const newMedia = [...mediaData];
-    const [movedItem] = newMedia.splice(oldIndex, 1);
-    newMedia.splice(newIndex, 0, movedItem);
-    setMediaData(newMedia);
-    
-    const updatedOrders = newMedia.map((item, idx) => ({ id: item._id, order: idx }));
+  const addMediaToSection = async (sectionId, media) => {
     try {
-      await api.put('/media/order', { items: updatedOrders });
+      const res = await api.post(`/media/sections/${sectionId}/items`, media);
+      setMediaData(mediaData.map(sec => sec._id === sectionId ? res.data : sec));
     } catch (error) {
-      console.error('Error reordering media:', error);
+      console.error('Error adding media to section:', error);
     }
   };
+
+  const updateMediaInSection = async (sectionId, mediaId, updatedMedia) => {
+    try {
+      const res = await api.post(`/media/sections/${sectionId}/items`, { ...updatedMedia, id: mediaId });
+      setMediaData(mediaData.map(sec => sec._id === sectionId ? res.data : sec));
+    } catch (error) {
+      console.error('Error updating media in section:', error);
+    }
+  };
+
+  const deleteMediaFromSection = async (sectionId, mediaId) => {
+    try {
+      const res = await api.delete(`/media/sections/${sectionId}/items/${mediaId}`);
+      setMediaData(mediaData.map(sec => sec._id === sectionId ? res.data : sec));
+    } catch (error) {
+      console.error('Error deleting media from section:', error);
+    }
+  };
+
+  const moveMediaInSection = async (sectionId, index, direction) => {
+    const section = mediaData.find(sec => sec._id === sectionId);
+    if (!section) return;
+
+    const newItems = [...section.media];
+    const targetIndex = index + direction;
+    if (targetIndex >= 0 && targetIndex < newItems.length) {
+      [newItems[index], newItems[targetIndex]] = [newItems[targetIndex], newItems[index]];
+      
+      try {
+        const res = await api.put(`/media/sections/${sectionId}`, { media: newItems });
+        setMediaData(mediaData.map(sec => sec._id === sectionId ? res.data : sec));
+      } catch (error) {
+        console.error('Error moving media in section:', error);
+      }
+    }
+  };
+
+  const reorderMediaInSection = async (sectionId, oldIndex, newIndex) => {
+    const section = mediaData.find(sec => sec._id === sectionId);
+    if (!section) return;
+
+    const newItems = [...section.media];
+    const [movedItem] = newItems.splice(oldIndex, 1);
+    newItems.splice(newIndex, 0, movedItem);
+
+    try {
+      const res = await api.put(`/media/sections/${sectionId}`, { media: newItems });
+      setMediaData(mediaData.map(sec => sec._id === sectionId ? res.data : sec));
+    } catch (error) {
+      console.error('Error reordering media in section:', error);
+    }
+  };
+
 
   return (
     <DataContext.Provider value={{
@@ -311,8 +362,10 @@ export const DataProvider = ({ children }) => {
       addArticleToSection, updateArticleInSection, deleteArticleFromSection, moveArticleInSection, reorderArticleInSection,
       familyData, addFamilySection, updateFamilySection, deleteFamilySection, moveFamilySection,
       addImageToFamily, updateFamilyImage, deleteFamilyImage, moveFamilyImage, reorderFamilyImage,
-      mediaData, saveMedia, deleteMedia, moveMedia, reorderMedia,
+      mediaData, addMediaSection, updateMediaSection, deleteMediaSection, moveMediaSection,
+      addMediaToSection, updateMediaInSection, deleteMediaFromSection, moveMediaInSection, reorderMediaInSection,
       loading
+
     }}>
       {children}
     </DataContext.Provider>

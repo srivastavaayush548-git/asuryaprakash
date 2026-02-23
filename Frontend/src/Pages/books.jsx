@@ -60,10 +60,12 @@ const Books = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-12">
           {/* Custom order sequence */}
           {[
+            "Sonia Under Scrutiny",
             "What Ails Indian Parliament",
             "PUBLIC MONEY, PRIVATE AGENDA: THE USE AND ABUSE OF MPLADS", 
             "The Emergency: Indian Democracy's Darkest Hour",
             "Democracy, Politics & Governance"
+
           ].map(title => nonFictionBooks.find(b => b.title.includes(title) || title.includes(b.title)))
            .filter(Boolean) // Remove any undefined if not found
            .map((book, index) => (

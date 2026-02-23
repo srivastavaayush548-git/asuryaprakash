@@ -1,10 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const { getMedia, saveMedia, deleteMedia, updateMediaOrder } = require('../controllers/mediaController');
+const { 
+    getMedia, addSection, updateSection, deleteSection, 
+    updateSectionsOrder, saveMedia, deleteMediaFromSection 
+} = require('../controllers/mediaController');
 
 router.get('/', getMedia);
-router.post('/', saveMedia);
-router.put('/order', updateMediaOrder);
-router.delete('/:id', deleteMedia);
+router.post('/sections', addSection);
+router.put('/sections/order', updateSectionsOrder);
+router.put('/sections/:id', updateSection);
+router.delete('/sections/:id', deleteSection);
+router.post('/sections/:sectionId/items', saveMedia);
+router.delete('/sections/:sectionId/items/:mediaId', deleteMediaFromSection);
 
 module.exports = router;
+

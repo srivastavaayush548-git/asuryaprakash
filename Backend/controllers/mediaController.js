@@ -1,21 +1,72 @@
-const Media = require('../models/Media');
+const MediaSection = require('../models/MediaSection');
 const { uploadToCloudinary } = require('../utils/cloudinary');
 
-// @desc    Get all media
+// @desc    Get all media sections
 // @route   GET /api/media
 exports.getMedia = async (req, res) => {
     try {
-        const media = await Media.find().sort({ order: 1 });
-        res.status(200).json(media);
+        const sections = await MediaSection.find().sort({ order: 1 });
+        res.status(200).json(sections);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
-// @desc    Create/Update media
-// @route   POST /api/media
+// @desc    Add media section
+// @route   POST /api/media/sections
+exports.addSection = async (req, res) => {
+    try {
+        const section = await MediaSection.create(req.body);
+        res.status(201).json(section);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+// @desc    Update media section
+// @route   PUT /api/media/sections/:id
+exports.updateSection = async (req, res) => {
+    try {
+        const section = await MediaSection.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.status(200).json(section);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+// @desc    Delete media section
+// @route   DELETE /api/media/sections/:id
+exports.deleteSection = async (req, res) => {
+    try {
+        await MediaSection.findByIdAndDelete(req.params.id);
+        res.status(200).json({ message: 'Section deleted' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Bulk update sections order
+// @route   PUT /api/media/sections/order
+exports.updateSectionsOrder = async (req, res) => {
+    try {
+        const { sections } = req.body;
+        const updatePromises = sections.map(sec => 
+            MediaSection.findByIdAndUpdate(sec.id, { order: sec.order })
+        );
+        await Promise.all(updatePromises);
+        res.status(200).json({ message: 'Sections order updated' });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+// @desc    Add/Update media in section
+// @route   POST /api/media/sections/:sectionId/items
 exports.saveMedia = async (req, res) => {
     try {
+        const section = await MediaSection.findById(req.params.sectionId);
+        if (!section) return res.status(404).json({ message: 'Section not found' });
+
         let { id, title, description, type, src, thumbnail, order } = req.body;
         
         let mediaUrl = src;
@@ -30,44 +81,33 @@ exports.saveMedia = async (req, res) => {
         }
 
         if (id) {
-            const media = await Media.findByIdAndUpdate(id, {
-                title, description, type, src: mediaUrl, thumbnail: thumbnailUrl, order
-            }, { new: true });
-            res.status(200).json(media);
+            // Update existing
+            const itemIndex = section.media.findIndex(m => m._id.toString() === id);
+            if (itemIndex !== -1) {
+                section.media[itemIndex] = { ...section.media[itemIndex], title, description, type, src: mediaUrl, thumbnail: thumbnailUrl, order };
+            }
         } else {
-            const media = await Media.create({
-                title, description, type, src: mediaUrl, thumbnail: thumbnailUrl, order
-            });
-            res.status(201).json(media);
+            // Add new
+            section.media.push({ title, description, type, src: mediaUrl, thumbnail: thumbnailUrl, order });
         }
+
+        await section.save();
+        res.status(200).json(section);
     } catch (error) {
-        console.error('Save Media Error:', error);
         res.status(400).json({ message: error.message });
     }
 };
 
-// @desc    Delete media
-// @route   DELETE /api/media/:id
-exports.deleteMedia = async (req, res) => {
+// @desc    Delete media from section
+// @route   DELETE /api/media/sections/:sectionId/items/:mediaId
+exports.deleteMediaFromSection = async (req, res) => {
     try {
-        await Media.findByIdAndDelete(req.params.id);
-        res.status(200).json({ message: 'Media deleted' });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-// @desc    Bulk update media order
-// @route   PUT /api/media/order
-exports.updateMediaOrder = async (req, res) => {
-    try {
-        const { items } = req.body;
-        const updatePromises = items.map(item => 
-            Media.findByIdAndUpdate(item.id, { order: item.order })
-        );
-        await Promise.all(updatePromises);
-        res.status(200).json({ message: 'Media order updated' });
+        const section = await MediaSection.findById(req.params.sectionId);
+        section.media = section.media.filter(m => m._id.toString() !== req.params.mediaId);
+        await section.save();
+        res.status(200).json(section);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
 };
+
