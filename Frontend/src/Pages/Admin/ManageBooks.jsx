@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useData } from '../../Context/DataContext';
-import { nonFictionBooks } from '../../Data/books';
+import { nonFictionBooks, bookInvitations, bookReviews } from '../../Data/books';
 import { Plus, MoveUp, MoveDown, Trash2, Edit, Save, X, Upload, Book, Image as ImageIcon, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 
-const ManageBooks = () => {
+const ManageBooks = ({ category }) => {
     const {
-        booksData: bookSections,
+        booksData: allBookSections,
         addBookSection,
         updateBookSection,
         deleteBookSection,
@@ -17,6 +17,10 @@ const ManageBooks = () => {
         reorderBookInSection,
         getSignature
     } = useData();
+
+    const bookSections = category
+        ? allBookSections.filter(s => s.title.toLowerCase().includes(category.toLowerCase()))
+        : allBookSections;
 
     const [expandedSections, setExpandedSections] = useState({});
     const [newSectionTitle, setNewSectionTitle] = useState('');
@@ -134,43 +138,64 @@ const ManageBooks = () => {
     };
 
     const handleSyncData = async () => {
-        if (!window.confirm('This will upload all books from the data file to the database. Continue?')) return;
+        if (!window.confirm('This will upload data from the data file to the database. Continue?')) return;
 
         try {
             setLoading(true);
-            let section = bookSections.find(s => s.title === 'Non-Fiction');
-            if (!section) {
-                section = await addBookSection('Non-Fiction');
-            }
 
-            for (const book of nonFictionBooks) {
-                // Check if book already exists in this section (by title)
-                const exists = section.books?.some(b => b.title === book.title);
-                if (exists) {
-                    console.log(`Skipping "${book.title}" as it already exists.`);
-                    continue;
+            const allConfigs = [
+                { title: 'Non-Fiction', data: nonFictionBooks },
+                { title: 'Book Invitation', data: bookInvitations },
+                { title: 'Book Review', data: bookReviews }
+            ];
+
+            const syncConfigs = category
+                ? allConfigs.filter(c => c.title.toLowerCase().includes(category.toLowerCase()))
+                : allConfigs;
+
+            for (const config of syncConfigs) {
+                let section = allBookSections.find(s => s.title === config.title);
+                if (!section) {
+                    section = await addBookSection(config.title);
                 }
 
-                console.log(`Syncing "${book.title}"...`);
-                let coverUrl = book.cover;
+                for (const book of config.data) {
+                    // Check if book already exists in this section
+                    const exists = section.books?.some(b =>
+                        (book.title && b.title === book.title)
+                    );
 
-                // If cover is a local asset (URL starting with /src or base64 or similar)
-                if (coverUrl && (coverUrl.startsWith('/') || coverUrl.includes('base64') || coverUrl.startsWith('http'))) {
-                    try {
-                        const response = await fetch(coverUrl);
-                        const blob = await response.blob();
-                        const file = new File([blob], 'cover.jpg', { type: blob.type });
-                        coverUrl = await uploadFileDirectly(file, 'books/covers');
-                    } catch (e) {
-                        console.error(`Failed to upload cover for ${book.title}:`, e);
-                        // Continue even if image fails
+                    if (exists) {
+                        console.log(`Skipping "${book.title}" in "${config.title}" as it already exists.`);
+                        continue;
                     }
-                }
 
-                await addBookToSection(section._id, {
-                    ...book,
-                    cover: coverUrl
-                });
+                    // For items without titles (like gallery images), skip if the section already contains items
+                    if (!book.title && section.books?.length > 0 && config.title !== 'Non-Fiction') {
+                        console.log(`Section "${config.title}" already has items, skipping sync for non-titled items.`);
+                        break;
+                    }
+
+                    console.log(`Syncing item in "${config.title}"...`);
+                    let coverUrl = book.cover;
+
+                    // If cover is a local asset
+                    if (coverUrl && (typeof coverUrl === 'string') && (coverUrl.startsWith('/') || coverUrl.includes('base64') || coverUrl.startsWith('http')) && !coverUrl.includes('res.cloudinary.com')) {
+                        try {
+                            const response = await fetch(coverUrl);
+                            const blob = await response.blob();
+                            const file = new File([blob], 'cover.jpg', { type: blob.type });
+                            coverUrl = await uploadFileDirectly(file, 'books/covers');
+                        } catch (e) {
+                            console.error(`Failed to upload cover:`, e);
+                        }
+                    }
+
+                    await addBookToSection(section._id, {
+                        ...book,
+                        cover: coverUrl
+                    });
+                }
             }
 
             alert('Data synced successfully!');
@@ -198,8 +223,13 @@ const ManageBooks = () => {
         <div className="space-y-8">
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-2xl font-serif font-bold text-stone-800">Manage Books</h2>
-                    <p className="text-stone-600">Organize your non-fiction, reviews, and invitations.</p>
+                    <h2 className="text-2xl font-serif font-bold text-stone-800">Manage {category || 'Books'}</h2>
+                    <p className="text-stone-600">
+                        {category === 'Non-Fiction' ? 'Organize your non-fiction literary works.' :
+                            category === 'Book Review' ? 'Manage book reviews and feedback gallery.' :
+                                category === 'Book Invitation' ? 'Manage book launch invitations.' :
+                                    'Organize your books, reviews, and invitations.'}
+                    </p>
                 </div>
                 <div className="flex gap-2">
                     <button
@@ -321,119 +351,172 @@ const ManageBooks = () => {
                                 {(addingBookTo === section._id || (editingBook && editingBook.sectionId === section._id)) && (
                                     <div className="mb-8 p-6 bg-stone-50 rounded-2xl border border-stone-200 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div className="space-y-4">
-                                                <div>
-                                                    <label className="block text-sm font-medium text-stone-700 mb-1">Title</label>
-                                                    <input
-                                                        type="text"
-                                                        value={bookForm.title}
-                                                        onChange={(e) => setBookForm({ ...bookForm, title: e.target.value })}
-                                                        className="w-full px-4 py-2 border border-stone-300 rounded-lg outline-none focus:ring-2 focus:ring-red-500"
-                                                        placeholder="Book title..."
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-sm font-medium text-stone-700 mb-1">Author</label>
-                                                    <input
-                                                        type="text"
-                                                        value={bookForm.author}
-                                                        onChange={(e) => setBookForm({ ...bookForm, author: e.target.value })}
-                                                        className="w-full px-4 py-2 border border-stone-300 rounded-lg outline-none focus:ring-2 focus:ring-red-500"
-                                                        placeholder="Author name..."
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-sm font-medium text-stone-700 mb-1">Description (Optional)</label>
-                                                    <textarea
-                                                        value={bookForm.description}
-                                                        onChange={(e) => setBookForm({ ...bookForm, description: e.target.value })}
-                                                        className="w-full px-4 py-2 border border-stone-300 rounded-lg outline-none focus:ring-2 focus:ring-red-500 h-24"
-                                                        placeholder="Brief description..."
-                                                    />
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-stone-700 mb-1">Pages</label>
-                                                        <input
-                                                            type="text"
-                                                            value={bookForm.pages}
-                                                            onChange={(e) => setBookForm({ ...bookForm, pages: e.target.value })}
-                                                            className="w-full px-4 py-2 border border-stone-300 rounded-lg outline-none focus:ring-2 focus:ring-red-500"
-                                                            placeholder="e.g. 296"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-stone-700 mb-1">Published</label>
-                                                        <input
-                                                            type="text"
-                                                            value={bookForm.published}
-                                                            onChange={(e) => setBookForm({ ...bookForm, published: e.target.value })}
-                                                            className="w-full px-4 py-2 border border-stone-300 rounded-lg outline-none focus:ring-2 focus:ring-red-500"
-                                                            placeholder="e.g. 12 March, 2025"
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="space-y-4">
-                                                <div>
-                                                    <label className="block text-sm font-medium text-stone-700 mb-1">Language</label>
-                                                    <input
-                                                        type="text"
-                                                        value={bookForm.language}
-                                                        onChange={(e) => setBookForm({ ...bookForm, language: e.target.value })}
-                                                        className="w-full px-4 py-2 border border-stone-300 rounded-lg outline-none focus:ring-2 focus:ring-red-500"
-                                                        placeholder="e.g. English"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-sm font-medium text-stone-700 mb-1">Purchase Link</label>
-                                                    <input
-                                                        type="text"
-                                                        value={bookForm.purchaseLink}
-                                                        onChange={(e) => setBookForm({ ...bookForm, purchaseLink: e.target.value })}
-                                                        className="w-full px-4 py-2 border border-stone-300 rounded-lg outline-none focus:ring-2 focus:ring-red-500"
-                                                        placeholder="https://amazon.com/..."
-                                                    />
-                                                </div>
-                                                <div className="flex items-center gap-2 py-2">
-                                                    <input
-                                                        type="checkbox"
-                                                        id="readOnline"
-                                                        checked={bookForm.readOnline}
-                                                        onChange={(e) => setBookForm({ ...bookForm, readOnline: e.target.checked })}
-                                                        className="w-4 h-4 text-red-700 border-stone-300 rounded focus:ring-red-500"
-                                                    />
-                                                    <label htmlFor="readOnline" className="text-sm font-medium text-stone-700">Enable Read Online</label>
-                                                </div>
-                                                <div>
-                                                    <label className="block text-sm font-medium text-stone-700 mb-1">Cover Image</label>
-                                                    <div className="flex gap-2">
-                                                        <input
-                                                            type="text"
-                                                            value={bookForm.cover.startsWith('data:') ? 'Local file selected' : bookForm.cover}
-                                                            readOnly
-                                                            className="flex-1 px-4 py-2 border border-stone-300 rounded-lg bg-stone-100 outline-none text-stone-500"
-                                                            placeholder="Upload cover..."
-                                                        />
-                                                        <label className="bg-stone-900 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-black transition-colors flex items-center gap-2">
-                                                            <Upload size={18} />
+                                            {/* For gallery style sections, we might only need title and cover */}
+                                            {!(section.title.toLowerCase().includes('review') || section.title.toLowerCase().includes('invitation')) ? (
+                                                <>
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-stone-700 mb-1">Title</label>
                                                             <input
-                                                                type="file"
-                                                                className="hidden"
-                                                                accept="image/*"
-                                                                onChange={(e) => handleFileChange(e, 'cover')}
+                                                                type="text"
+                                                                value={bookForm.title}
+                                                                onChange={(e) => setBookForm({ ...bookForm, title: e.target.value })}
+                                                                className="w-full px-4 py-2 border border-stone-300 rounded-lg outline-none focus:ring-2 focus:ring-red-500"
+                                                                placeholder="Book title..."
                                                             />
-                                                        </label>
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-stone-700 mb-1">Author</label>
+                                                            <input
+                                                                type="text"
+                                                                value={bookForm.author}
+                                                                onChange={(e) => setBookForm({ ...bookForm, author: e.target.value })}
+                                                                className="w-full px-4 py-2 border border-stone-300 rounded-lg outline-none focus:ring-2 focus:ring-red-500"
+                                                                placeholder="Author name..."
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-stone-700 mb-1">Description (Optional)</label>
+                                                            <textarea
+                                                                value={bookForm.description}
+                                                                onChange={(e) => setBookForm({ ...bookForm, description: e.target.value })}
+                                                                className="w-full px-4 py-2 border border-stone-300 rounded-lg outline-none focus:ring-2 focus:ring-red-500 h-24"
+                                                                placeholder="Brief description..."
+                                                            />
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <label className="block text-sm font-medium text-stone-700 mb-1">Pages</label>
+                                                                <input
+                                                                    type="text"
+                                                                    value={bookForm.pages}
+                                                                    onChange={(e) => setBookForm({ ...bookForm, pages: e.target.value })}
+                                                                    className="w-full px-4 py-2 border border-stone-300 rounded-lg outline-none focus:ring-2 focus:ring-red-500"
+                                                                    placeholder="e.g. 296"
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-sm font-medium text-stone-700 mb-1">Published</label>
+                                                                <input
+                                                                    type="text"
+                                                                    value={bookForm.published}
+                                                                    onChange={(e) => setBookForm({ ...bookForm, published: e.target.value })}
+                                                                    className="w-full px-4 py-2 border border-stone-300 rounded-lg outline-none focus:ring-2 focus:ring-red-500"
+                                                                    placeholder="e.g. 12 March, 2025"
+                                                                />
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                </div>
 
-                                                {bookForm.cover && (
-                                                    <div className="mt-2 p-2 border border-stone-200 rounded-xl bg-white flex justify-center">
-                                                        <img src={bookForm.cover} className="max-h-32 rounded object-contain" alt="Preview" />
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-stone-700 mb-1">Language</label>
+                                                            <input
+                                                                type="text"
+                                                                value={bookForm.language}
+                                                                onChange={(e) => setBookForm({ ...bookForm, language: e.target.value })}
+                                                                className="w-full px-4 py-2 border border-stone-300 rounded-lg outline-none focus:ring-2 focus:ring-red-500"
+                                                                placeholder="e.g. English"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-stone-700 mb-1">Purchase Link</label>
+                                                            <input
+                                                                type="text"
+                                                                value={bookForm.purchaseLink}
+                                                                onChange={(e) => setBookForm({ ...bookForm, purchaseLink: e.target.value })}
+                                                                className="w-full px-4 py-2 border border-stone-300 rounded-lg outline-none focus:ring-2 focus:ring-red-500"
+                                                                placeholder="https://amazon.com/..."
+                                                            />
+                                                        </div>
+                                                        <div className="flex items-center gap-2 py-2">
+                                                            <input
+                                                                type="checkbox"
+                                                                id="readOnline"
+                                                                checked={bookForm.readOnline}
+                                                                onChange={(e) => setBookForm({ ...bookForm, readOnline: e.target.checked })}
+                                                                className="w-4 h-4 text-red-700 border-stone-300 rounded focus:ring-red-500"
+                                                            />
+                                                            <label htmlFor="readOnline" className="text-sm font-medium text-stone-700">Enable Read Online</label>
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-stone-700 mb-1">Cover Image / Photo</label>
+                                                            <div className="flex gap-2">
+                                                                <input
+                                                                    type="text"
+                                                                    value={bookForm.cover.startsWith('data:') ? 'Local file selected' : bookForm.cover}
+                                                                    readOnly
+                                                                    className="flex-1 px-4 py-2 border border-stone-300 rounded-lg bg-stone-100 outline-none text-stone-500"
+                                                                    placeholder="Upload cover..."
+                                                                />
+                                                                <label className="bg-stone-900 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-black transition-colors flex items-center gap-2">
+                                                                    <Upload size={18} />
+                                                                    <input
+                                                                        type="file"
+                                                                        className="hidden"
+                                                                        accept="image/*"
+                                                                        onChange={(e) => handleFileChange(e, 'cover')}
+                                                                    />
+                                                                </label>
+                                                            </div>
+                                                        </div>
+
+                                                        {bookForm.cover && (
+                                                            <div className="mt-2 p-2 border border-stone-200 rounded-xl bg-white flex justify-center">
+                                                                <img src={bookForm.cover} className="max-h-32 rounded object-contain" alt="Preview" />
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                )}
-                                            </div>
+                                                </>
+                                            ) : (
+                                                /* Gallery Style Form - Simpler */
+                                                <>
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-stone-700 mb-1">Title (Optional)</label>
+                                                            <input
+                                                                type="text"
+                                                                value={bookForm.title}
+                                                                onChange={(e) => setBookForm({ ...bookForm, title: e.target.value })}
+                                                                className="w-full px-4 py-2 border border-stone-300 rounded-lg outline-none focus:ring-2 focus:ring-red-500"
+                                                                placeholder="Item title..."
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-stone-700 mb-1">Image / Photo</label>
+                                                            <div className="flex gap-2">
+                                                                <input
+                                                                    type="text"
+                                                                    value={bookForm.cover.startsWith('data:') ? 'Local file selected' : (bookForm.cover || '')}
+                                                                    readOnly
+                                                                    className="flex-1 px-4 py-2 border border-stone-300 rounded-lg bg-stone-100 outline-none text-stone-500"
+                                                                    placeholder="Upload image..."
+                                                                />
+                                                                <label className="bg-stone-900 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-black transition-colors flex items-center gap-2">
+                                                                    <Upload size={18} />
+                                                                    <input
+                                                                        type="file"
+                                                                        className="hidden"
+                                                                        accept="image/*"
+                                                                        onChange={(e) => handleFileChange(e, 'cover')}
+                                                                    />
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center justify-center">
+                                                        {bookForm.cover ? (
+                                                            <div className="p-2 border border-stone-200 rounded-xl bg-white">
+                                                                <img src={bookForm.cover} className="max-h-48 rounded object-contain" alt="Preview" />
+                                                            </div>
+                                                        ) : (
+                                                            <div className="w-full h-48 border-2 border-dashed border-stone-200 rounded-xl flex items-center justify-center text-stone-400">
+                                                                <ImageIcon size={48} />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </>
+                                            )}
                                         </div>
 
                                         <div className="flex justify-end gap-3 pt-4 border-t border-stone-200">

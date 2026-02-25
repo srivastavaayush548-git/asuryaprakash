@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LayoutGrid, FileText, Image as ImageIcon, Video, ArrowLeft, Plus, MoveUp, MoveDown, Trash2, Edit, Save, X, Upload, LogOut } from 'lucide-react';
+import { LayoutGrid, FileText, Image as ImageIcon, Video, ArrowLeft, Plus, MoveUp, MoveDown, Trash2, Edit, Save, X, Upload, LogOut, BookOpen, Mail, BookText } from 'lucide-react';
 import ManageArticles from './ManageArticles';
 import ManageFamily from './ManageFamily';
 import ManageMedia from './ManageMedia';
@@ -54,11 +54,27 @@ const AdminPanel = () => {
           </button>
 
           <button
-            onClick={() => setActiveTab('books')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'books' ? 'bg-red-700 text-white' : 'hover:bg-stone-800'}`}
+            onClick={() => setActiveTab('non-fiction')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'non-fiction' ? 'bg-red-700 text-white' : 'hover:bg-stone-800'}`}
           >
-            <LayoutGrid size={20} />
-            <span>Books</span>
+            <BookText size={20} />
+            <span>Non-Fiction</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('reviews')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'reviews' ? 'bg-red-700 text-white' : 'hover:bg-stone-800'}`}
+          >
+            <BookOpen size={20} />
+            <span>Book Reviews</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('invitations')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'invitations' ? 'bg-red-700 text-white' : 'hover:bg-stone-800'}`}
+          >
+            <Mail size={20} />
+            <span>Invitations</span>
           </button>
         </nav>
 
@@ -92,6 +108,9 @@ const AdminPanel = () => {
           {activeTab === 'articles' && <ManageArticles />}
           {activeTab === 'family' && <ManageFamily />}
           {activeTab === 'media' && <ManageMedia />}
+          {activeTab === 'non-fiction' && <ManageBooks category="Non-Fiction" />}
+          {activeTab === 'reviews' && <ManageBooks category="Book Review" />}
+          {activeTab === 'invitations' && <ManageBooks category="Book Invitation" />}
           {activeTab === 'books' && <ManageBooks />}
         </main>
       </div>

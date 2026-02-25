@@ -4,6 +4,21 @@ import parliamentCover from '../assets/what_ails_indian_parliament_cover.jpeg';
 import democracyPoliticsCover from '../assets/Images/democracypolitics.jpeg';
 import soniaCover from '../assets/Images/soniaunderscrutiny.jpg';
 // import allInTheNameCover from '../assets/Images/allinthename.jpeg';
+import bi1 from '../assets/Images/Books/bi/bi(1).jpeg';
+import bi2 from '../assets/Images/Books/bi/bi(2).jpeg';
+import bi3 from '../assets/Images/Books/bi/bi(3).jpeg';
+import bi4 from '../assets/Images/Books/bi/bi(4).jpeg';
+
+import br1 from '../assets/Images/Books/Br/br(1).jpeg';
+import br2 from '../assets/Images/Books/Br/br(2).jpeg';
+import br2_1 from '../assets/Images/Books/Br/br2(1).jpeg';
+import br2_2 from '../assets/Images/Books/Br/br2(2).jpeg';
+import br2_3 from '../assets/Images/Books/Br/br2(3).jpeg';
+import br2_4 from '../assets/Images/Books/Br/br2(4).jpeg';
+import br2_5 from '../assets/Images/Books/Br/br2(5).jpeg';
+import br2_6 from '../assets/Images/Books/Br/br2(6).jpeg';
+import br2_7 from '../assets/Images/Books/Br/br2(7).jpeg';
+import br2_8 from '../assets/Images/Books/Br/br2(8).jpeg';
 
 export const nonFictionBooks = [
 
@@ -54,5 +69,25 @@ export const nonFictionBooks = [
     purchaseLink: "https://www.amazon.in/Issue-Foreign-Origin-Sonia-Scrutiny/dp/8189072056"
   },
 
-  
+
+];
+
+export const bookInvitations = [
+  { cover: bi1 },
+  { cover: bi2 },
+  { cover: bi3 },
+  { cover: bi4 }
+];
+
+export const bookReviews = [
+  { cover: br1 },
+  { cover: br2 },
+  { cover: br2_1 },
+  { cover: br2_2 },
+  { cover: br2_3 },
+  { cover: br2_4 },
+  { cover: br2_5 },
+  { cover: br2_6 },
+  { cover: br2_7 },
+  { cover: br2_8 }
 ];
