@@ -11,6 +11,7 @@ export const DataProvider = ({ children }) => {
   const [articles, setArticles] = useState([]);
   const [familyData, setFamilyData] = useState([]);
   const [mediaData, setMediaData] = useState([]);
+  const [booksData, setBooksData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,14 +21,16 @@ export const DataProvider = ({ children }) => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [artRes, famRes, medRes] = await Promise.all([
+      const [artRes, famRes, medRes, bookRes] = await Promise.all([
         api.get('/articles'),
         api.get('/family'),
-        api.get('/media')
+        api.get('/media'),
+        api.get('/books')
       ]);
       setArticles(artRes.data);
       setFamilyData(famRes.data);
       setMediaData(medRes.data);
+      setBooksData(bookRes.data);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -68,7 +71,7 @@ export const DataProvider = ({ children }) => {
     const targetIndex = index + direction;
     if (targetIndex >= 0 && targetIndex < newArticles.length) {
       [newArticles[index], newArticles[targetIndex]] = [newArticles[targetIndex], newArticles[index]];
-      
+
       const updatedOrders = newArticles.map((sec, idx) => ({ id: sec._id, order: idx }));
       try {
         setArticles(newArticles);
@@ -115,7 +118,7 @@ export const DataProvider = ({ children }) => {
     const targetIndex = index + direction;
     if (targetIndex >= 0 && targetIndex < newItems.length) {
       [newItems[index], newItems[targetIndex]] = [newItems[targetIndex], newItems[index]];
-      
+
       try {
         const res = await api.put(`/articles/sections/${sectionId}`, { articles: newItems });
         setArticles(articles.map(sec => sec._id === sectionId ? res.data : sec));
@@ -174,7 +177,7 @@ export const DataProvider = ({ children }) => {
     const targetIndex = index + direction;
     if (targetIndex >= 0 && targetIndex < newFamily.length) {
       [newFamily[index], newFamily[targetIndex]] = [newFamily[targetIndex], newFamily[index]];
-      
+
       const updatedOrders = newFamily.map((sec, idx) => ({ id: sec._id, order: idx }));
       try {
         setFamilyData(newFamily);
@@ -222,7 +225,7 @@ export const DataProvider = ({ children }) => {
     const targetIndex = index + direction;
     if (targetIndex >= 0 && targetIndex < newImages.length) {
       [newImages[index], newImages[targetIndex]] = [newImages[targetIndex], newImages[index]];
-      
+
       // We update the entire section's image array via the section update endpoint
       try {
         const res = await api.put(`/family/sections/${sectionId}`, { images: newImages });
@@ -282,7 +285,7 @@ export const DataProvider = ({ children }) => {
     const targetIndex = index + direction;
     if (targetIndex >= 0 && targetIndex < newMedia.length) {
       [newMedia[index], newMedia[targetIndex]] = [newMedia[targetIndex], newMedia[index]];
-      
+
       const updatedOrders = newMedia.map((sec, idx) => ({ id: sec._id, order: idx }));
       try {
         setMediaData(newMedia);
@@ -329,7 +332,7 @@ export const DataProvider = ({ children }) => {
     const targetIndex = index + direction;
     if (targetIndex >= 0 && targetIndex < newItems.length) {
       [newItems[index], newItems[targetIndex]] = [newItems[targetIndex], newItems[index]];
-      
+
       try {
         const res = await api.put(`/media/sections/${sectionId}`, { media: newItems });
         setMediaData(mediaData.map(sec => sec._id === sectionId ? res.data : sec));
@@ -355,6 +358,112 @@ export const DataProvider = ({ children }) => {
     }
   };
 
+  // Books CRUD
+  const addBookSection = async (title) => {
+    try {
+      const res = await api.post('/books/sections', { title, order: booksData.length });
+      setBooksData([...booksData, res.data]);
+    } catch (error) {
+      console.error('Error adding book section:', error);
+    }
+  };
+
+  const updateBookSection = async (sectionId, title) => {
+    try {
+      const res = await api.put(`/books/sections/${sectionId}`, { title });
+      setBooksData(booksData.map(sec => sec._id === sectionId ? res.data : sec));
+    } catch (error) {
+      console.error('Error updating book section:', error);
+    }
+  };
+
+  const deleteBookSection = async (sectionId) => {
+    try {
+      await api.delete(`/books/sections/${sectionId}`);
+      setBooksData(booksData.filter(sec => sec._id !== sectionId));
+    } catch (error) {
+      console.error('Error deleting book section:', error);
+    }
+  };
+
+  const moveBookSection = async (index, direction) => {
+    const newBooks = [...booksData];
+    const targetIndex = index + direction;
+    if (targetIndex >= 0 && targetIndex < newBooks.length) {
+      [newBooks[index], newBooks[targetIndex]] = [newBooks[targetIndex], newBooks[index]];
+
+      const updatedOrders = newBooks.map((sec, idx) => ({ id: sec._id, order: idx }));
+      try {
+        setBooksData(newBooks);
+        await api.put('/books/sections/order', { sections: updatedOrders });
+      } catch (error) {
+        console.error('Error updating book section order:', error);
+        fetchData();
+      }
+    }
+  };
+
+  const addBookToSection = async (sectionId, book) => {
+    try {
+      const res = await api.post(`/books/sections/${sectionId}/items`, book);
+      setBooksData(booksData.map(sec => sec._id === sectionId ? res.data : sec));
+    } catch (error) {
+      console.error('Error adding book to section:', error);
+    }
+  };
+
+  const updateBookInSection = async (sectionId, bookId, updatedBook) => {
+    try {
+      const res = await api.post(`/books/sections/${sectionId}/items`, { ...updatedBook, id: bookId });
+      setBooksData(booksData.map(sec => sec._id === sectionId ? res.data : sec));
+    } catch (error) {
+      console.error('Error updating book in section:', error);
+    }
+  };
+
+  const deleteBookFromSection = async (sectionId, bookId) => {
+    try {
+      const res = await api.delete(`/books/sections/${sectionId}/items/${bookId}`);
+      setBooksData(booksData.map(sec => sec._id === sectionId ? res.data : sec));
+    } catch (error) {
+      console.error('Error deleting book from section:', error);
+    }
+  };
+
+  const moveBookInSection = async (sectionId, index, direction) => {
+    const section = booksData.find(sec => sec._id === sectionId);
+    if (!section) return;
+
+    const newItems = [...section.books];
+    const targetIndex = index + direction;
+    if (targetIndex >= 0 && targetIndex < newItems.length) {
+      [newItems[index], newItems[targetIndex]] = [newItems[targetIndex], newItems[index]];
+
+      try {
+        const res = await api.put(`/books/sections/${sectionId}`, { books: newItems });
+        setBooksData(booksData.map(sec => sec._id === sectionId ? res.data : sec));
+      } catch (error) {
+        console.error('Error moving book in section:', error);
+      }
+    }
+  };
+
+  const reorderBookInSection = async (sectionId, oldIndex, newIndex) => {
+    const section = booksData.find(sec => sec._id === sectionId);
+    if (!section) return;
+
+    const newItems = [...section.books];
+    const [movedItem] = newItems.splice(oldIndex, 1);
+    newItems.splice(newIndex, 0, movedItem);
+
+    try {
+      const res = await api.put(`/books/sections/${sectionId}`, { books: newItems });
+      setBooksData(booksData.map(sec => sec._id === sectionId ? res.data : sec));
+    } catch (error) {
+      console.error('Error reordering book in section:', error);
+    }
+  };
+
 
   const getSignature = async (folder) => {
     try {
@@ -375,6 +484,8 @@ export const DataProvider = ({ children }) => {
       addImageToFamily, updateFamilyImage, deleteFamilyImage, moveFamilyImage, reorderFamilyImage,
       mediaData, addMediaSection, updateMediaSection, deleteMediaSection, moveMediaSection,
       addMediaToSection, updateMediaInSection, deleteMediaFromSection, moveMediaInSection, reorderMediaInSection,
+      booksData, addBookSection, updateBookSection, deleteBookSection, moveBookSection,
+      addBookToSection, updateBookInSection, deleteBookFromSection, moveBookInSection, reorderBookInSection,
       getSignature,
       loading
 

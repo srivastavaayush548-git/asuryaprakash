@@ -1,46 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { nonFictionBooks } from '../Data/books';
+import React, { useState } from 'react';
+import { useData } from '../Context/DataContext';
 import { X, Maximize2 } from 'lucide-react';
-import invitationImg from '../assets/invitation.png';
-import bookNewsImg from '../assets/booknews.png';
-
-// Import Book Invitation (bi) images
-import bi1 from '../assets/Images/Books/bi/bi(1).jpeg';
-import bi2 from '../assets/Images/Books/bi/bi(2).jpeg';
-import bi3 from '../assets/Images/Books/bi/bi(3).jpeg';
-import bi4 from '../assets/Images/Books/bi/bi(4).jpeg';
-
-// Import Book Review (Br) images
-import br1 from '../assets/Images/Books/Br/br(1).jpeg';
-import br2 from '../assets/Images/Books/Br/br(2).jpeg';
-import br2_1 from '../assets/Images/Books/Br/br2(1).jpeg';
-import br2_2 from '../assets/Images/Books/Br/br2(2).jpeg';
-import br2_3 from '../assets/Images/Books/Br/br2(3).jpeg';
-import br2_4 from '../assets/Images/Books/Br/br2(4).jpeg';
-import br2_5 from '../assets/Images/Books/Br/br2(5).jpeg';
-import br2_6 from '../assets/Images/Books/Br/br2(6).jpeg';
-import br2_7 from '../assets/Images/Books/Br/br2(7).jpeg';
-import br2_8 from '../assets/Images/Books/Br/br2(8).jpeg';
 
 const Books = () => {
+  const { booksData, loading } = useData();
   const [selectedImage, setSelectedImage] = useState(null);
+  if (loading) return null;
 
-  useEffect(() => {
-    if (selectedImage) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'auto';
-    }
-    return () => {
-      document.body.style.overflow = 'auto';
-    };
-  }, [selectedImage]);
-
-  const invitationImages = [invitationImg, bi1, bi2, bi3, bi4];
-  const reviewImages = [bookNewsImg, br1, br2,br2_3, br2_1, br2_2, br2_6, br2_5, br2_4, br2_8,br2_7];
-``
   return (
-    <div className="min-h-screen bg-linear-to-br from-orange-200 via-yellow-200 to-orange-100 text-stone-800 font-sans selection:bg-red-100 pt-24">
+    <div className="min-h-screen bg-linear-to-br from-orange-200 via-yellow-200 to-orange-100 text-stone-800 font-sans selection:bg-red-100 pt-24 text-center sm:text-left">
       {/* --- Hero Section --- */}
       <div className="bg-white border-b border-stone-200">
         <div className="max-w-6xl mx-auto px-6 py-16 md:py-24">
@@ -59,154 +27,126 @@ const Books = () => {
         </div>
       </div>
 
-      {/* --- Non-Fiction Section --- */}
-      <section className="py-20 max-w-6xl mx-auto px-6">
-        <div className="flex items-end mb-12 border-b border-stone-200 pb-4">
-          <h2 className="text-3xl font-serif font-bold text-stone-900">Non-Fiction</h2>
-        </div>
+      {/* Dynamic Sections from Backend */}
+      {booksData.sort((a, b) => a.order - b.order).map((section, sIdx) => (
+        <section key={section._id} className={`py-20 max-w-6xl mx-auto px-6 ${sIdx > 0 ? 'border-t border-stone-300/30' : ''}`}>
+          <div className="flex items-end mb-12 border-b border-stone-200 pb-4">
+            <h2 className="text-3xl font-serif font-bold text-stone-900">{section.title}</h2>
+          </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-12">
-          {/* Custom order sequence */}
-          {[
-            "What Ails Indian Parliament",
-            "PUBLIC MONEY, PRIVATE AGENDA: THE USE AND ABUSE OF MPLADS", 
-            "The Emergency: Indian Democracy's Darkest Hour",
-            "Democracy, Politics & Governance",
-            "Sonia Under Scrutiny"
-          ].map(title => nonFictionBooks.find(b => b.title.includes(title) || title.includes(b.title)))
-           .filter(Boolean) // Remove any undefined if not found
-           .map((book, index) => (
-            <article key={index} className="group cursor-pointer flex flex-col h-full">
-              <div className="relative aspect-2/3 bg-stone-200 mb-6 overflow-hidden rounded-lg shadow-md group-hover:shadow-xl transition-all duration-500">
-                <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/10 transition-colors duration-500 z-10"></div>
-                <img 
-                  src={book.cover} 
-                  alt={book.title}
-                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
-                />
-              </div>
-              
-              <div className="flex-1 flex flex-col">
-                <div className="text-xs font-bold text-red-700 mb-2 uppercase tracking-wide">
-                  Non-Fiction
-                </div>
-                <h3 className="text-xl font-serif font-bold text-stone-900 mb-3 leading-tight group-hover:text-red-700 transition-colors">
-                  {book.title}
-                </h3>
-                <p className="text-stone-500 font-medium mb-4">
-                  By: {book.author}
-                </p>
-                
-                {/* Metadata Grid */}
-                {(book.pages || book.published || book.language) && (
-                  <div className="grid grid-cols-2 gap-y-2 text-xs text-stone-500 mb-4 border-y border-stone-100 py-3">
-                    {book.pages && <div><span className="font-bold text-stone-700">Pages:</span> {book.pages}</div>}
-                    {book.language && <div><span className="font-bold text-stone-700">Language:</span> {book.language}</div>}
-                    {book.published && <div className="col-span-2"><span className="font-bold text-stone-700">Published:</span> {book.published}</div>}
+          {/* Generic Grid for Books In Section */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-12">
+            {section.books.sort((a, b) => a.order - b.order).map((book) => {
+              // Check if it's a gallery-style section (Invitation/Review usually have minimal text)
+              const isGalleryStyle = section.title.toLowerCase().includes('invitation') || section.title.toLowerCase().includes('review');
+
+              if (isGalleryStyle && !book.title && !book.description) {
+                return (
+                  <div
+                    key={book._id}
+                    className="relative aspect-3/4 bg-white p-2 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group"
+                    onClick={() => setSelectedImage(book.cover)}
+                  >
+                    <div className="relative h-full w-full overflow-hidden rounded-lg">
+                      <img src={book.cover} alt="Gallery Item" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                        <Maximize2 className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-8 h-8" />
+                      </div>
+                    </div>
                   </div>
-                )}
+                )
+              }
 
-                <p className="text-stone-600 text-sm leading-relaxed mb-6 flex-1 line-clamp-4">
-                  {book.description}
-                </p>
-                
-                <div className="mt-auto pt-4 border-t border-stone-100 flex items-center justify-between">
-                   {book.readOnline ? (
-                      <button 
-                        className="px-4 py-2 bg-red-800 text-white text-xs font-bold uppercase tracking-wider rounded hover:bg-stone-900 transition-colors"
-                        onClick={() => alert("Reader mode with watermark coming soon.")}
-                      >
-                        Read Online
-                      </button>
-                   ) : <div></div>}
-                   
-                   {book.purchaseLink && (
-                     <a 
-                       href={book.purchaseLink} 
-                       target="_blank" 
-                       rel="noopener noreferrer"
-                       className="px-4 py-2 bg-stone-900 text-white text-xs font-bold uppercase tracking-wider rounded hover:bg-red-700 transition-colors"
-                       onClick={(e) => e.stopPropagation()}
-                     >
-                       Buy Now
-                     </a>
-                   )}
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
+              return (
+                <article key={book._id} className="group cursor-pointer flex flex-col h-full border-b md:border-b-0 pb-10 md:pb-0 border-stone-200 last:border-0" onClick={() => (isGalleryStyle && book.cover) && setSelectedImage(book.cover)}>
+                  <div className="relative aspect-2/3 bg-stone-200 mb-6 overflow-hidden rounded-lg shadow-md group-hover:shadow-xl transition-all duration-500">
+                    <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/10 transition-colors duration-500 z-10"></div>
+                    <img
+                      src={book.cover}
+                      alt={book.title}
+                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
+                    />
+                  </div>
 
-      {/* --- Book Invitation Section --- */}
-      <section className="py-20 max-w-6xl mx-auto px-6 border-t border-stone-300/30">
-        <div className="flex items-end mb-12 border-b border-stone-200 pb-4">
-          <h2 className="text-3xl font-serif font-bold text-stone-900">Book Invitation</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-center sm:text-left">
-          {invitationImages.map((img, idx) => (
-            <div 
-              key={idx} 
-              className="relative aspect-3/4 bg-white p-2 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group"
-              onClick={() => setSelectedImage(img)}
-            >
-              <div className="relative h-full w-full overflow-hidden rounded-lg">
-                <img src={img} alt="Book Invitation" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-                  <Maximize2 className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-8 h-8" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+                  <div className="flex-1 flex flex-col">
+                    <div className="text-xs font-bold text-red-700 mb-2 uppercase tracking-wide">
+                      {section.title}
+                    </div>
+                    {book.title && (
+                      <h3 className="text-xl font-serif font-bold text-stone-900 mb-3 leading-tight group-hover:text-red-700 transition-colors">
+                        {book.title}
+                      </h3>
+                    )}
+                    {book.author && (
+                      <p className="text-stone-500 font-medium mb-4">
+                        By: {book.author}
+                      </p>
+                    )}
 
-      {/* --- Book Review Section --- */}
-      <section className="py-20 max-w-6xl mx-auto px-6 border-t border-stone-300/30">
-        <div className="flex items-end mb-12 border-b border-stone-200 pb-4">
-          <h2 className="text-3xl font-serif font-bold text-stone-900">Book Review</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          {reviewImages.map((img, idx) => (
-            <div 
-              key={idx} 
-              className="relative bg-white p-3 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer group border border-stone-200"
-              onClick={() => setSelectedImage(img)}
-            >
-              <div className="relative w-full overflow-hidden rounded-xl">
-                <img 
-                  src={img} 
-                  alt="Book Review" 
-                  className="w-full h-auto object-contain transform group-hover:scale-[1.02] transition-transform duration-700" 
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 flex items-center justify-center">
-                  <Maximize2 className="text-stone-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-10 h-10 bg-white/80 p-2 rounded-full backdrop-blur-sm" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+                    {/* Metadata Grid */}
+                    {(book.pages || book.published || book.language) && (
+                      <div className="grid grid-cols-2 gap-y-2 text-xs text-stone-500 mb-4 border-y border-stone-100 py-3">
+                        {book.pages && <div><span className="font-bold text-stone-700">Pages:</span> {book.pages}</div>}
+                        {book.language && <div><span className="font-bold text-stone-700">Language:</span> {book.language}</div>}
+                        {book.published && <div className="col-span-2"><span className="font-bold text-stone-700">Published:</span> {book.published}</div>}
+                      </div>
+                    )}
+
+                    {book.description && (
+                      <p className="text-stone-600 text-sm leading-relaxed mb-6 flex-1 line-clamp-4">
+                        {book.description}
+                      </p>
+                    )}
+
+                    <div className="mt-auto pt-4 border-t border-stone-100 flex items-center justify-between">
+                      {book.readOnline ? (
+                        <button
+                          className="px-4 py-2 bg-red-800 text-white text-xs font-bold uppercase tracking-wider rounded hover:bg-stone-900 transition-colors"
+                          onClick={(e) => { e.stopPropagation(); alert("Reader mode with watermark coming soon.") }}
+                        >
+                          Read Online
+                        </button>
+                      ) : <div></div>}
+
+                      {book.purchaseLink && (
+                        <a
+                          href={book.purchaseLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-2 bg-stone-900 text-white text-xs font-bold uppercase tracking-wider rounded hover:bg-red-700 transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Buy Now
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </article>
+              )
+            })}
+          </div>
+        </section>
+      ))}
 
       {/* --- Lightbox Modal --- */}
       {selectedImage && (
-        <div 
+        <div
           className="fixed inset-0 z-110 flex items-center justify-center bg-black/95 backdrop-blur-md p-4 animate-in fade-in duration-300"
           onClick={() => setSelectedImage(null)}
         >
-          <button 
+          <button
             className="absolute top-6 right-6 text-white/70 hover:text-white hover:scale-110 transition-all p-2 bg-white/10 rounded-full backdrop-blur-md border border-white/20"
             onClick={() => setSelectedImage(null)}
           >
             <X size={28} />
           </button>
-          <div 
+          <div
             className="relative max-w-5xl w-full flex items-center justify-center animate-in zoom-in-95 duration-300"
             onClick={(e) => e.stopPropagation()}
           >
-            <img 
-              src={selectedImage} 
-              alt="Full Size Preview" 
+            <img
+              src={selectedImage}
+              alt="Full Size Preview"
               className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
             />
           </div>

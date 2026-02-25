@@ -3,6 +3,7 @@ import { LayoutGrid, FileText, Image as ImageIcon, Video, ArrowLeft, Plus, MoveU
 import ManageArticles from './ManageArticles';
 import ManageFamily from './ManageFamily';
 import ManageMedia from './ManageMedia';
+import ManageBooks from './ManageBooks';
 import { Link } from 'react-router-dom';
 
 const AdminPanel = () => {
@@ -18,17 +19,17 @@ const AdminPanel = () => {
             ADMIN PANEL
           </h2>
         </div>
-        
+
         <nav className="flex-1 p-4 space-y-2">
-          <button 
+          <button
             onClick={() => setActiveTab('articles')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'articles' ? 'bg-red-700 text-white' : 'hover:bg-stone-800'}`}
           >
             <FileText size={20} />
             <span>Articles</span>
           </button>
-          
-          <button 
+
+          <button
             onClick={() => setActiveTab('family')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'family' ? 'bg-red-700 text-white' : 'hover:bg-stone-800'}`}
           >
@@ -36,12 +37,20 @@ const AdminPanel = () => {
             <span>Family Gallery</span>
           </button>
 
-          <button 
+          <button
             onClick={() => setActiveTab('media')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'media' ? 'bg-red-700 text-white' : 'hover:bg-stone-800'}`}
           >
             <Video size={20} />
             <span>Media Library</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('books')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'books' ? 'bg-red-700 text-white' : 'hover:bg-stone-800'}`}
+          >
+            <LayoutGrid size={20} />
+            <span>Books</span>
           </button>
         </nav>
 
@@ -68,6 +77,7 @@ const AdminPanel = () => {
           {activeTab === 'articles' && <ManageArticles />}
           {activeTab === 'family' && <ManageFamily />}
           {activeTab === 'media' && <ManageMedia />}
+          {activeTab === 'books' && <ManageBooks />}
         </main>
       </div>
     </div>

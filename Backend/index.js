@@ -5,6 +5,7 @@ const connectDB = require('./config/db');
 const articleRoutes = require('./routes/articleRoutes');
 const familyRoutes = require('./routes/familyRoutes');
 const mediaRoutes = require('./routes/mediaRoutes');
+const bookRoutes = require('./routes/bookRoutes');
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 app.use('/api/articles', articleRoutes);
 app.use('/api/family', familyRoutes);
 app.use('/api/media', mediaRoutes);
+app.use('/api/books', bookRoutes);
 
 const PORT = process.env.PORT || 5000;
 
