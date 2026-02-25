@@ -269,7 +269,7 @@ export const vipCurrentData = [
   {
     id: 'former-uk-prime-minister',
     title: "With the Hon'ble Former UK Prime Minister Shri Rishi Sunak",
-    thumbnail: frmuk0,
+    thumbnail: frmuk3,
     images: [
       { id: 1001, src: frmuk0, alt: "With the Hon'ble Former UK Prime Minister Shri Rishi Sunak" },
       { id: 1002, src: frmuk1, alt: "With the Hon'ble Former UK Prime Minister Shri Rishi Sunak" },
