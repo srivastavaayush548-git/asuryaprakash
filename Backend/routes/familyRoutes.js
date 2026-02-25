@@ -4,13 +4,16 @@ const {
     getFamilyData, addSection, updateSection, deleteSection, 
     updateSectionsOrder, saveImage, deleteImage 
 } = require('../controllers/familyController');
+const { protect } = require('../utils/authMiddleware');
 
 router.get('/', getFamilyData);
-router.post('/sections', addSection);
-router.put('/sections/order', updateSectionsOrder);
-router.put('/sections/:id', updateSection);
-router.delete('/sections/:id', deleteSection);
-router.post('/sections/:sectionId/images', saveImage);
-router.delete('/sections/:sectionId/images/:imageId', deleteImage);
+
+// Protected routes
+router.post('/sections', protect, addSection);
+router.put('/sections/order', protect, updateSectionsOrder);
+router.put('/sections/:id', protect, updateSection);
+router.delete('/sections/:id', protect, deleteSection);
+router.post('/sections/:sectionId/images', protect, saveImage);
+router.delete('/sections/:sectionId/images/:imageId', protect, deleteImage);
 
 module.exports = router;

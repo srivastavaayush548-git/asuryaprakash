@@ -6,6 +6,7 @@ const articleRoutes = require('./routes/articleRoutes');
 const familyRoutes = require('./routes/familyRoutes');
 const mediaRoutes = require('./routes/mediaRoutes');
 const bookRoutes = require('./routes/bookRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 dotenv.config();
 
@@ -13,6 +14,7 @@ dotenv.config();
 connectDB();
 
 const app = express();
+const { protect } = require('./utils/authMiddleware');
 
 // Middleware
 app.use(cors());
@@ -20,6 +22,7 @@ app.use(express.json({ limit: '100mb' })); // Increased limit for base64 media
 app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
 // Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/articles', articleRoutes);
 app.use('/api/family', familyRoutes);
 app.use('/api/media', mediaRoutes);

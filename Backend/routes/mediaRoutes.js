@@ -1,19 +1,22 @@
 const express = require('express');
 const router = express.Router();
-const { 
-    getMedia, addSection, updateSection, deleteSection, 
+const {
+    getMedia, addSection, updateSection, deleteSection,
     updateSectionsOrder, saveMedia, deleteMediaFromSection,
-    getSignature 
+    getSignature
 } = require('../controllers/mediaController');
+const { protect } = require('../utils/authMiddleware');
 
 router.get('/', getMedia);
-router.get('/signature', getSignature);
-router.post('/sections', addSection);
-router.put('/sections/order', updateSectionsOrder);
-router.put('/sections/:id', updateSection);
-router.delete('/sections/:id', deleteSection);
-router.post('/sections/:sectionId/items', saveMedia);
-router.delete('/sections/:sectionId/items/:mediaId', deleteMediaFromSection);
+
+// Protected routes
+router.get('/signature', protect, getSignature);
+router.post('/sections', protect, addSection);
+router.put('/sections/order', protect, updateSectionsOrder);
+router.put('/sections/:id', protect, updateSection);
+router.delete('/sections/:id', protect, deleteSection);
+router.post('/sections/:sectionId/items', protect, saveMedia);
+router.delete('/sections/:sectionId/items/:mediaId', protect, deleteMediaFromSection);
 
 module.exports = router;
 

@@ -17,18 +17,32 @@ import TermsAndConditions from './Pages/termsAndConditions'
 import AwardsIndex from './Pages/awards/index'
 import AdminPanel from './Pages/Admin/AdminPanel'
 import Media from './Pages/media'
+import LoginPage from './Pages/Admin/LoginPage'
+import { AuthProvider, useAuth } from './Context/AuthContext'
 
 import Footer from './Components/Footer'
 import ScrollToTop from './Components/ScrollToTop'
 
+const ProtectedRoute = ({ children }) => {
+  const { admin, loading } = useAuth();
+
+  if (loading) return null; // Or a loading spinner
+
+  if (!admin) {
+    return <LoginPage />;
+  }
+
+  return children;
+};
+
 const AppContent = () => {
   const location = useLocation();
-  const isAdmin = location.pathname.startsWith('/admin');
+  const isAdminPath = location.pathname.startsWith('/admin');
 
   return (
     <>
       <ScrollToTop />
-      {!isAdmin && <Header />}
+      {!isAdminPath && <Header />}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about-me" element={<AboutMe />} />
@@ -45,10 +59,15 @@ const AppContent = () => {
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
         <Route path="/media" element={<Media />} />
-        
-        <Route path="/admin" element={<AdminPanel />} />
+
+        <Route path="/admin" element={
+          <ProtectedRoute>
+            <AdminPanel />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/login" element={<LoginPage />} />
       </Routes>
-      {!isAdmin && <Footer />}
+      {!isAdminPath && <Footer />}
     </>
   );
 };
@@ -56,7 +75,9 @@ const AppContent = () => {
 const App = () => {
   return (
     <Router>
-      <AppContent />
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </Router>
   )
 }

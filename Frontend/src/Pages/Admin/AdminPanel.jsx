@@ -1,13 +1,21 @@
 import React, { useState } from 'react';
-import { LayoutGrid, FileText, Image as ImageIcon, Video, ArrowLeft, Plus, MoveUp, MoveDown, Trash2, Edit, Save, X, Upload } from 'lucide-react';
+import { LayoutGrid, FileText, Image as ImageIcon, Video, ArrowLeft, Plus, MoveUp, MoveDown, Trash2, Edit, Save, X, Upload, LogOut } from 'lucide-react';
 import ManageArticles from './ManageArticles';
 import ManageFamily from './ManageFamily';
 import ManageMedia from './ManageMedia';
 import ManageBooks from './ManageBooks';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../Context/AuthContext';
 
 const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('articles');
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
     <div className="min-h-screen bg-stone-50 flex">
@@ -59,6 +67,13 @@ const AdminPanel = () => {
             <ArrowLeft size={18} />
             <span>Back to Site</span>
           </Link>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-red-900/30 transition-all text-red-500 mt-2"
+          >
+            <LogOut size={18} />
+            <span>Logout</span>
+          </button>
         </div>
       </div>
 
