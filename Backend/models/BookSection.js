@@ -44,6 +44,10 @@ const BookSectionSchema = new mongoose.Schema({
         trim: true
     },
     books: [BookItemSchema],
+    category: {
+        type: String,
+        trim: true
+    },
     order: {
         type: Number,
         default: 0

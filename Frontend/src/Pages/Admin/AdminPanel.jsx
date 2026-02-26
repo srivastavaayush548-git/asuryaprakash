@@ -76,6 +76,14 @@ const AdminPanel = () => {
             <Mail size={20} />
             <span>Invitations</span>
           </button>
+
+          <button
+            onClick={() => setActiveTab('books')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'books' ? 'bg-red-700 text-white' : 'hover:bg-stone-800'}`}
+          >
+            <BookText size={20} />
+            <span>All Books</span>
+          </button>
         </nav>
 
         <div className="p-4 border-t border-stone-800">

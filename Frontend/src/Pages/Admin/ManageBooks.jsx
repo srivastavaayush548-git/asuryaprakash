@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useData } from '../../Context/DataContext';
-import { nonFictionBooks, bookInvitations, bookReviews } from '../../Data/books';
-import { Plus, MoveUp, MoveDown, Trash2, Edit, Save, X, Upload, Book, Image as ImageIcon, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
+import { Plus, MoveUp, MoveDown, Trash2, Edit, Save, X, Upload, Book, Image as ImageIcon, ChevronDown, ChevronUp } from 'lucide-react';
 
 const ManageBooks = ({ category }) => {
     const {
@@ -19,7 +18,24 @@ const ManageBooks = ({ category }) => {
     } = useData();
 
     const bookSections = category
-        ? allBookSections.filter(s => s.title.toLowerCase().includes(category.toLowerCase()))
+        ? allBookSections.filter(s => {
+            const lowTitle = (s.title || '').toLowerCase();
+            const lowCat = (s.category || '').toLowerCase();
+            const targetCat = category.toLowerCase();
+
+            // Explicit category match (The most reliable way)
+            if (lowCat === targetCat) return true;
+
+            // Keyword match in title (Fallback for legacy data)
+            if (targetCat.includes('review') && lowTitle.includes('review')) return true;
+            if (targetCat.includes('invitation') && lowTitle.includes('invitation')) return true;
+            if (targetCat.includes('non-fiction') && lowTitle.includes('non-fiction')) return true;
+
+            // Fallback for Non-Fiction: If it has no category tag and doesn't belong to others, show it here
+            if (targetCat === 'non-fiction' && !lowTitle.includes('review') && !lowTitle.includes('invitation') && !lowCat) return true;
+
+            return false;
+        })
         : allBookSections;
 
     const [expandedSections, setExpandedSections] = useState({});
@@ -53,7 +69,7 @@ const ManageBooks = ({ category }) => {
     };
 
     const handleAddSection = () => {
-        addBookSection(newSectionTitle || 'Untitled Section');
+        addBookSection(newSectionTitle || 'Untitled Section', category);
         setNewSectionTitle('');
         setIsAddingSection(false);
     };
@@ -137,75 +153,6 @@ const ManageBooks = ({ category }) => {
         }
     };
 
-    const handleSyncData = async () => {
-        if (!window.confirm('This will upload data from the data file to the database. Continue?')) return;
-
-        try {
-            setLoading(true);
-
-            const allConfigs = [
-                { title: 'Non-Fiction', data: nonFictionBooks },
-                { title: 'Book Invitation', data: bookInvitations },
-                { title: 'Book Review', data: bookReviews }
-            ];
-
-            const syncConfigs = category
-                ? allConfigs.filter(c => c.title.toLowerCase().includes(category.toLowerCase()))
-                : allConfigs;
-
-            for (const config of syncConfigs) {
-                let section = allBookSections.find(s => s.title === config.title);
-                if (!section) {
-                    section = await addBookSection(config.title);
-                }
-
-                for (const book of config.data) {
-                    // Check if book already exists in this section
-                    const exists = section.books?.some(b =>
-                        (book.title && b.title === book.title)
-                    );
-
-                    if (exists) {
-                        console.log(`Skipping "${book.title}" in "${config.title}" as it already exists.`);
-                        continue;
-                    }
-
-                    // For items without titles (like gallery images), skip if the section already contains items
-                    if (!book.title && section.books?.length > 0 && config.title !== 'Non-Fiction') {
-                        console.log(`Section "${config.title}" already has items, skipping sync for non-titled items.`);
-                        break;
-                    }
-
-                    console.log(`Syncing item in "${config.title}"...`);
-                    let coverUrl = book.cover;
-
-                    // If cover is a local asset
-                    if (coverUrl && (typeof coverUrl === 'string') && (coverUrl.startsWith('/') || coverUrl.includes('base64') || coverUrl.startsWith('http')) && !coverUrl.includes('res.cloudinary.com')) {
-                        try {
-                            const response = await fetch(coverUrl);
-                            const blob = await response.blob();
-                            const file = new File([blob], 'cover.jpg', { type: blob.type });
-                            coverUrl = await uploadFileDirectly(file, 'books/covers');
-                        } catch (e) {
-                            console.error(`Failed to upload cover:`, e);
-                        }
-                    }
-
-                    await addBookToSection(section._id, {
-                        ...book,
-                        cover: coverUrl
-                    });
-                }
-            }
-
-            alert('Data synced successfully!');
-        } catch (error) {
-            console.error('Error syncing data:', error);
-            alert('Failed to sync data: ' + error.message);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleFileChange = (e, field) => {
         const file = e.target.files[0];
@@ -232,15 +179,6 @@ const ManageBooks = ({ category }) => {
                     </p>
                 </div>
                 <div className="flex gap-2">
-                    <button
-                        onClick={handleSyncData}
-                        disabled={loading}
-                        className="bg-stone-100 text-stone-700 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-stone-200 transition-colors shadow-sm disabled:opacity-50"
-                        title="Sync books from local data file"
-                    >
-                        <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-                        Sync Data
-                    </button>
                     <button
                         onClick={() => setIsAddingSection(true)}
                         className="bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-red-800 transition-colors shadow-md"
@@ -352,7 +290,13 @@ const ManageBooks = ({ category }) => {
                                     <div className="mb-8 p-6 bg-stone-50 rounded-2xl border border-stone-200 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             {/* For gallery style sections, we might only need title and cover */}
-                                            {!(section.title.toLowerCase().includes('review') || section.title.toLowerCase().includes('invitation')) ? (
+                                            {/* Gallery style is for Reviews and Invitations */}
+                                            {!(
+                                                section.title.toLowerCase().includes('review') ||
+                                                section.title.toLowerCase().includes('invitation') ||
+                                                (section.category && section.category.toLowerCase().includes('review')) ||
+                                                (section.category && section.category.toLowerCase().includes('invitation'))
+                                            ) ? (
                                                 <>
                                                     <div className="space-y-4">
                                                         <div>

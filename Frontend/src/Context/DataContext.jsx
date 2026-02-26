@@ -355,9 +355,9 @@ export const DataProvider = ({ children }) => {
   };
 
   // Books CRUD
-  const addBookSection = async (title) => {
+  const addBookSection = async (title, category) => {
     try {
-      const res = await api.post('/books/sections', { title, order: booksData.length });
+      const res = await api.post('/books/sections', { title, category, order: booksData.length });
       setBooksData([...booksData, res.data]);
       return res.data;
     } catch (error) {
