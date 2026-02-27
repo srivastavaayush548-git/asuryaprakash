@@ -13,6 +13,11 @@ const FamilyImageSchema = new mongoose.Schema({
     order: {
         type: Number,
         default: 0
+    },
+    type: {
+        type: String,
+        enum: ['image', 'video'],
+        default: 'image'
     }
 });
 

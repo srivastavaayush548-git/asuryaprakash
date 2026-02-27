@@ -56,7 +56,8 @@ const ManageBooks = ({ category }) => {
         published: '',
         language: '',
         purchaseLink: '',
-        readOnline: false
+        readOnline: false,
+        type: 'image'
     });
 
     const [rawFiles, setRawFiles] = useState({ cover: null });
@@ -83,7 +84,7 @@ const ManageBooks = ({ category }) => {
         setBookForm({
             title: '', author: '', description: '', cover: '',
             pages: '', published: '', language: '', purchaseLink: '',
-            readOnline: false
+            readOnline: false, type: 'image'
         });
         setRawFiles({ cover: null });
         setAddingBookTo(null);
@@ -92,7 +93,7 @@ const ManageBooks = ({ category }) => {
         setUploadProgress(0);
     };
 
-    const uploadFileDirectly = async (fileData, folder) => {
+    const uploadFileDirectly = async (fileData, folder, type) => {
         const { timestamp, signature, cloudName, apiKey } = await getSignature(folder);
 
         const formData = new FormData();
@@ -104,7 +105,8 @@ const ManageBooks = ({ category }) => {
 
         return new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`);
+            const resourceType = type === 'video' ? 'video' : 'image';
+            xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`);
 
             xhr.upload.onprogress = (e) => {
                 if (e.lengthComputable) {
@@ -135,7 +137,7 @@ const ManageBooks = ({ category }) => {
 
             if (rawFiles.cover) {
                 setUploadProgress(0);
-                finalForm.cover = await uploadFileDirectly(rawFiles.cover, 'books/covers');
+                finalForm.cover = await uploadFileDirectly(rawFiles.cover, 'books/covers', bookForm.type);
             }
 
             if (editingBook) {
@@ -157,10 +159,17 @@ const ManageBooks = ({ category }) => {
     const handleFileChange = (e, field) => {
         const file = e.target.files[0];
         if (file) {
+            if (file.size > 50 * 1024 * 1024) {
+                return alert('File size too large. Please keep it under 50MB.');
+            }
             setRawFiles(prev => ({ ...prev, [field]: file }));
             const reader = new FileReader();
             reader.onloadend = () => {
-                setBookForm(prev => ({ ...prev, [field]: reader.result }));
+                setBookForm(prev => ({
+                    ...prev,
+                    [field]: reader.result,
+                    type: file.type.startsWith('video') ? 'video' : 'image'
+                }));
             };
             reader.readAsDataURL(file);
         }
@@ -398,7 +407,7 @@ const ManageBooks = ({ category }) => {
                                                                     <input
                                                                         type="file"
                                                                         className="hidden"
-                                                                        accept="image/*"
+                                                                        accept="image/*,video/*"
                                                                         onChange={(e) => handleFileChange(e, 'cover')}
                                                                     />
                                                                 </label>
@@ -407,7 +416,16 @@ const ManageBooks = ({ category }) => {
 
                                                         {bookForm.cover && (
                                                             <div className="mt-2 p-2 border border-stone-200 rounded-xl bg-white flex justify-center">
-                                                                <img src={bookForm.cover} className="max-h-32 rounded object-contain" alt="Preview" />
+                                                                {bookForm.type === 'video' ? (
+                                                                    <div className="relative">
+                                                                        <video src={bookForm.cover} className="max-h-32 rounded object-contain" />
+                                                                        <div className="absolute inset-0 flex items-center justify-center">
+                                                                            <Play className="text-white fill-current w-6 h-6" />
+                                                                        </div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <img src={bookForm.cover} className="max-h-32 rounded object-contain" alt="Preview" />
+                                                                )}
                                                             </div>
                                                         )}
                                                     </div>
@@ -451,7 +469,16 @@ const ManageBooks = ({ category }) => {
                                                     <div className="flex items-center justify-center">
                                                         {bookForm.cover ? (
                                                             <div className="p-2 border border-stone-200 rounded-xl bg-white">
-                                                                <img src={bookForm.cover} className="max-h-48 rounded object-contain" alt="Preview" />
+                                                                {bookForm.type === 'video' ? (
+                                                                    <div className="relative">
+                                                                        <video src={bookForm.cover} className="max-h-48 rounded object-contain" />
+                                                                        <div className="absolute inset-0 flex items-center justify-center">
+                                                                            <Play className="text-white fill-current w-10 h-10" />
+                                                                        </div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <img src={bookForm.cover} className="max-h-48 rounded object-contain" alt="Preview" />
+                                                                )}
                                                             </div>
                                                         ) : (
                                                             <div className="w-full h-48 border-2 border-dashed border-stone-200 rounded-xl flex items-center justify-center text-stone-400">
@@ -498,8 +525,16 @@ const ManageBooks = ({ category }) => {
                                         {section.books.map((item, itemIndex) => (
                                             <div key={item._id} className="relative group bg-white border border-stone-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
                                                 <div className="aspect-2/3 bg-stone-200 relative">
-                                                    <img src={item.cover} className="w-full h-full object-cover" alt={item.title} />
-
+                                                    {item.type === 'video' ? (
+                                                        <video src={item.cover} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <img src={item.cover} className="w-full h-full object-cover" alt={item.title} />
+                                                    )}
+                                                    {item.type === 'video' && (
+                                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                            <Play className="text-white fill-current w-10 h-10 opacity-70" />
+                                                        </div>
+                                                    )}
                                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                                         <button
                                                             onClick={() => {
@@ -513,7 +548,8 @@ const ManageBooks = ({ category }) => {
                                                                     published: item.published || '',
                                                                     language: item.language || '',
                                                                     purchaseLink: item.purchaseLink || '',
-                                                                    readOnline: item.readOnline || false
+                                                                    readOnline: item.readOnline || false,
+                                                                    type: item.type || 'image'
                                                                 });
                                                             }}
                                                             className="p-2 bg-white rounded-full text-stone-900 hover:text-red-700"

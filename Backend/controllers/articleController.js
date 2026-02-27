@@ -50,7 +50,7 @@ exports.deleteSection = async (req, res) => {
 exports.updateSectionsOrder = async (req, res) => {
     try {
         const { sections } = req.body;
-        const updatePromises = sections.map(sec => 
+        const updatePromises = sections.map(sec =>
             ArticleSection.findByIdAndUpdate(sec.id, { order: sec.order })
         );
         await Promise.all(updatePromises);
@@ -67,22 +67,23 @@ exports.saveArticle = async (req, res) => {
         const section = await ArticleSection.findById(req.params.sectionId);
         if (!section) return res.status(404).json({ message: 'Section not found' });
 
-        let { id, title, src, alt, order } = req.body;
-        
+        let { id, title, src, alt, order, type } = req.body;
+
         let imageUrl = src;
-        if (src && src.startsWith('data:image')) {
-            imageUrl = await uploadToCloudinary(src, 'articles');
+        if (src && src.startsWith('data:')) {
+            const resType = src.includes('video') ? 'video' : 'image';
+            imageUrl = await uploadToCloudinary(src, 'articles', resType);
         }
 
         if (id) {
             // Update existing
             const itemIndex = section.articles.findIndex(art => art._id.toString() === id);
             if (itemIndex !== -1) {
-                section.articles[itemIndex] = { ...section.articles[itemIndex], title, src: imageUrl, alt, order };
+                section.articles[itemIndex] = { ...section.articles[itemIndex].toObject(), title, src: imageUrl, alt, order, type };
             }
         } else {
             // Add new
-            section.articles.push({ title, src: imageUrl, alt, order });
+            section.articles.push({ title, src: imageUrl, alt, order, type });
         }
 
         await section.save();

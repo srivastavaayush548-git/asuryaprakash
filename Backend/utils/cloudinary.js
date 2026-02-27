@@ -19,7 +19,15 @@ const uploadToCloudinary = async (fileStr, folder = 'portfolio', resourceType = 
     try {
         // If it's already a URL, return it
         if (fileStr.startsWith('http')) return fileStr;
-        
+
+        // Estimate size for Base64 (string length * 0.75)
+        const sizeInBytes = fileStr.length * 0.75;
+        const fiftyMB = 50 * 1024 * 1024;
+
+        if (sizeInBytes > fiftyMB) {
+            throw new Error('File size exceeds 50MB limit');
+        }
+
         const uploadResponse = await cloudinary.uploader.upload(fileStr, {
             folder: folder,
             resource_type: resourceType
@@ -27,7 +35,7 @@ const uploadToCloudinary = async (fileStr, folder = 'portfolio', resourceType = 
         return uploadResponse.secure_url;
     } catch (error) {
         console.error('Cloudinary Upload Error:', error);
-        throw new Error(`${resourceType} upload failed`);
+        throw new Error(error.message || `${resourceType} upload failed`);
     }
 };
 
@@ -37,12 +45,12 @@ const generateSignature = (folder) => {
         timestamp: timestamp,
         folder: folder
     }, process.env.CLOUDINARY_API_SECRET);
-    
-    return { 
-        timestamp, 
-        signature, 
-        cloudName: process.env.CLOUDINARY_CLOUD_NAME, 
-        apiKey: process.env.CLOUDINARY_API_KEY 
+
+    return {
+        timestamp,
+        signature,
+        cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+        apiKey: process.env.CLOUDINARY_API_KEY
     };
 };
 

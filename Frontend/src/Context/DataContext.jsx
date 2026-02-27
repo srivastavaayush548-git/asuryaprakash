@@ -115,8 +115,10 @@ export const DataProvider = ({ children }) => {
     if (targetIndex >= 0 && targetIndex < newItems.length) {
       [newItems[index], newItems[targetIndex]] = [newItems[targetIndex], newItems[index]];
 
+      const itemsWithUpdatedOrder = newItems.map((item, idx) => ({ ...item, order: idx }));
+
       try {
-        const res = await api.put(`/articles/sections/${sectionId}`, { articles: newItems });
+        const res = await api.put(`/articles/sections/${sectionId}`, { articles: itemsWithUpdatedOrder });
         setArticles(articles.map(sec => sec._id === sectionId ? res.data : sec));
       } catch (error) {
         console.error('Error moving article in section:', error);
@@ -132,12 +134,18 @@ export const DataProvider = ({ children }) => {
     const [movedItem] = newItems.splice(oldIndex, 1);
     newItems.splice(newIndex, 0, movedItem);
 
+    const itemsWithUpdatedOrder = newItems.map((item, idx) => ({ ...item, order: idx }));
+
     try {
-      const res = await api.put(`/articles/sections/${sectionId}`, { articles: newItems });
+      const res = await api.put(`/articles/sections/${sectionId}`, { articles: itemsWithUpdatedOrder });
       setArticles(articles.map(sec => sec._id === sectionId ? res.data : sec));
     } catch (error) {
       console.error('Error reordering article in section:', error);
     }
+  };
+
+  const reorderAllArticlesWithOrder = (sectionId, articlesArray) => {
+    return articlesArray.map((art, idx) => ({ ...art, order: idx }));
   };
 
   // Family CRUD
@@ -222,9 +230,11 @@ export const DataProvider = ({ children }) => {
     if (targetIndex >= 0 && targetIndex < newImages.length) {
       [newImages[index], newImages[targetIndex]] = [newImages[targetIndex], newImages[index]];
 
+      const imagesWithUpdatedOrder = newImages.map((img, idx) => ({ ...img, order: idx }));
+
       // We update the entire section's image array via the section update endpoint
       try {
-        const res = await api.put(`/family/sections/${sectionId}`, { images: newImages });
+        const res = await api.put(`/family/sections/${sectionId}`, { images: imagesWithUpdatedOrder });
         setFamilyData(familyData.map(sec => sec._id === sectionId ? res.data : sec));
       } catch (error) {
         console.error('Error moving image:', error);
@@ -240,8 +250,10 @@ export const DataProvider = ({ children }) => {
     const [movedItem] = newImages.splice(oldIndex, 1);
     newImages.splice(newIndex, 0, movedItem);
 
+    const imagesWithUpdatedOrder = newImages.map((img, idx) => ({ ...img, order: idx }));
+
     try {
-      const res = await api.put(`/family/sections/${sectionId}`, { images: newImages });
+      const res = await api.put(`/family/sections/${sectionId}`, { images: imagesWithUpdatedOrder });
       setFamilyData(familyData.map(sec => sec._id === sectionId ? res.data : sec));
     } catch (error) {
       console.error('Error reordering image:', error);
@@ -329,8 +341,10 @@ export const DataProvider = ({ children }) => {
     if (targetIndex >= 0 && targetIndex < newItems.length) {
       [newItems[index], newItems[targetIndex]] = [newItems[targetIndex], newItems[index]];
 
+      const itemsWithUpdatedOrder = newItems.map((item, idx) => ({ ...item, order: idx }));
+
       try {
-        const res = await api.put(`/media/sections/${sectionId}`, { media: newItems });
+        const res = await api.put(`/media/sections/${sectionId}`, { media: itemsWithUpdatedOrder });
         setMediaData(mediaData.map(sec => sec._id === sectionId ? res.data : sec));
       } catch (error) {
         console.error('Error moving media in section:', error);
@@ -346,8 +360,10 @@ export const DataProvider = ({ children }) => {
     const [movedItem] = newItems.splice(oldIndex, 1);
     newItems.splice(newIndex, 0, movedItem);
 
+    const itemsWithUpdatedOrder = newItems.map((item, idx) => ({ ...item, order: idx }));
+
     try {
-      const res = await api.put(`/media/sections/${sectionId}`, { media: newItems });
+      const res = await api.put(`/media/sections/${sectionId}`, { media: itemsWithUpdatedOrder });
       setMediaData(mediaData.map(sec => sec._id === sectionId ? res.data : sec));
     } catch (error) {
       console.error('Error reordering media in section:', error);
@@ -439,8 +455,10 @@ export const DataProvider = ({ children }) => {
     if (targetIndex >= 0 && targetIndex < newItems.length) {
       [newItems[index], newItems[targetIndex]] = [newItems[targetIndex], newItems[index]];
 
+      const itemsWithUpdatedOrder = newItems.map((item, idx) => ({ ...item, order: idx }));
+
       try {
-        const res = await api.put(`/books/sections/${sectionId}`, { books: newItems });
+        const res = await api.put(`/books/sections/${sectionId}`, { books: itemsWithUpdatedOrder });
         setBooksData(booksData.map(sec => sec._id === sectionId ? res.data : sec));
       } catch (error) {
         console.error('Error moving book in section:', error);
@@ -456,8 +474,10 @@ export const DataProvider = ({ children }) => {
     const [movedItem] = newItems.splice(oldIndex, 1);
     newItems.splice(newIndex, 0, movedItem);
 
+    const itemsWithUpdatedOrder = newItems.map((item, idx) => ({ ...item, order: idx }));
+
     try {
-      const res = await api.put(`/books/sections/${sectionId}`, { books: newItems });
+      const res = await api.put(`/books/sections/${sectionId}`, { books: itemsWithUpdatedOrder });
       setBooksData(booksData.map(sec => sec._id === sectionId ? res.data : sec));
     } catch (error) {
       console.error('Error reordering book in section:', error);

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useData } from '../Context/DataContext';
-import { X, Maximize2 } from 'lucide-react';
+import { X, Maximize2, Play } from 'lucide-react';
 
 const Books = () => {
   const { booksData, loading } = useData();
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedBook, setSelectedBook] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null); // Keep for compatibility if needed, but better use selectedBook
   if (loading) return null;
 
   return (
@@ -45,12 +46,20 @@ const Books = () => {
                   <div
                     key={book._id}
                     className="relative aspect-3/4 bg-white p-2 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group"
-                    onClick={() => setSelectedImage(book.cover)}
+                    onClick={() => setSelectedBook(book)}
                   >
                     <div className="relative h-full w-full overflow-hidden rounded-lg">
-                      <img src={book.cover} alt="Gallery Item" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      {book.type === 'video' ? (
+                        <video src={book.cover} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      ) : (
+                        <img src={book.cover} alt="Gallery Item" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      )}
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-                        <Maximize2 className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-8 h-8" />
+                        {book.type === 'video' ? (
+                          <Play className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-12 h-12" />
+                        ) : (
+                          <Maximize2 className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-8 h-8" />
+                        )}
                       </div>
                     </div>
                   </div>
@@ -58,14 +67,23 @@ const Books = () => {
               }
 
               return (
-                <article key={book._id} className="group cursor-pointer flex flex-col h-full border-b md:border-b-0 pb-10 md:pb-0 border-stone-200 last:border-0" onClick={() => (isGalleryStyle && book.cover) && setSelectedImage(book.cover)}>
+                <article key={book._id} className="group cursor-pointer flex flex-col h-full border-b md:border-b-0 pb-10 md:pb-0 border-stone-200 last:border-0" onClick={() => (isGalleryStyle && book.cover) && setSelectedBook(book)}>
                   <div className="relative aspect-2/3 bg-stone-200 mb-6 overflow-hidden rounded-lg shadow-md group-hover:shadow-xl transition-all duration-500">
                     <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/10 transition-colors duration-500 z-10"></div>
-                    <img
-                      src={book.cover}
-                      alt={book.title}
-                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
-                    />
+                    {book.type === 'video' ? (
+                      <video src={book.cover} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
+                    ) : (
+                      <img
+                        src={book.cover}
+                        alt={book.title}
+                        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
+                      />
+                    )}
+                    {book.type === 'video' && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover:opacity-0 transition-opacity z-20">
+                        <Play className="text-white fill-current w-12 h-12 opacity-70" />
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex-1 flex flex-col">
@@ -129,14 +147,14 @@ const Books = () => {
       ))}
 
       {/* --- Lightbox Modal --- */}
-      {selectedImage && (
+      {(selectedBook || selectedImage) && (
         <div
           className="fixed inset-0 z-110 flex items-center justify-center bg-black/95 backdrop-blur-md p-4 animate-in fade-in duration-300"
-          onClick={() => setSelectedImage(null)}
+          onClick={() => { setSelectedBook(null); setSelectedImage(null); }}
         >
           <button
             className="absolute top-6 right-6 text-white/70 hover:text-white hover:scale-110 transition-all p-2 bg-white/10 rounded-full backdrop-blur-md border border-white/20"
-            onClick={() => setSelectedImage(null)}
+            onClick={() => { setSelectedBook(null); setSelectedImage(null); }}
           >
             <X size={28} />
           </button>
@@ -144,11 +162,20 @@ const Books = () => {
             className="relative max-w-5xl w-full flex items-center justify-center animate-in zoom-in-95 duration-300"
             onClick={(e) => e.stopPropagation()}
           >
-            <img
-              src={selectedImage}
-              alt="Full Size Preview"
-              className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
-            />
+            {selectedBook?.type === 'video' ? (
+              <video
+                src={selectedBook.cover}
+                className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+                controls
+                autoPlay
+              />
+            ) : (
+              <img
+                src={selectedBook?.cover || selectedImage}
+                alt="Full Size Preview"
+                className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+              />
+            )}
           </div>
         </div>
       )}

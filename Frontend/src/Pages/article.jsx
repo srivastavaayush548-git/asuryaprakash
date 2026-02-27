@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useData } from '../Context/DataContext';
-import { X } from 'lucide-react';
+import { X, Play } from 'lucide-react';
 
 const Article = () => {
   const { articles } = useData();
@@ -36,21 +36,39 @@ const Article = () => {
               <div className="w-24 h-1 bg-red-800 mx-auto rounded-full opacity-20"></div>
             </div>
 
-            <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8">
+            {/* Section Gallery */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {section.articles?.map((image) => (
-                <div 
-                  key={image._id} 
+                <div
+                  key={image._id}
                   className="break-inside-avoid group relative cursor-pointer overflow-hidden rounded-lg shadow-md hover:shadow-2xl transition-all duration-500 bg-white border border-stone-200"
                   onClick={() => setSelectedImage(image)}
                 >
-                  <div className="relative"> 
-                    <img 
-                      src={image.src} 
-                      alt={image.alt || image.title} 
-                      loading="lazy"
-                      className="w-full h-auto transform group-hover:scale-[1.02] transition-transform duration-700"
-                    />
+                  <div className="relative">
+                    {image.type === 'video' ? (
+                      <video
+                        src={image.src}
+                        className="w-full h-auto transform group-hover:scale-[1.02] transition-transform duration-700"
+                        controls={false}
+                        muted
+                        loop
+                        onMouseOver={(e) => e.target.play()}
+                        onMouseOut={(e) => e.target.pause()}
+                      />
+                    ) : (
+                      <img
+                        src={image.src}
+                        alt={image.alt || image.title}
+                        loading="lazy"
+                        className="w-full h-auto transform group-hover:scale-[1.02] transition-transform duration-700"
+                      />
+                    )}
                     <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/5 transition-colors duration-300" />
+                    {image.type === 'video' && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover:opacity-0 transition-opacity">
+                        <Play className="text-white fill-current w-12 h-12 opacity-70" />
+                      </div>
+                    )}
                   </div>
                   {image.title && (
                     <div className="p-4 border-t border-stone-100 bg-white">
@@ -66,22 +84,32 @@ const Article = () => {
 
       {/* --- Lightbox Modal --- */}
       {selectedImage && (
-        <div 
+        <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
           onClick={() => setSelectedImage(null)}
         >
-          <button 
+          <button
             className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors p-2"
             onClick={() => setSelectedImage(null)}
           >
             <X size={32} />
           </button>
-          <img 
-            src={selectedImage.src} 
-            alt={selectedImage.alt} 
-            className="max-w-full max-h-[90vh] object-contain rounded shadow-2xl"
-            onClick={(e) => e.stopPropagation()} 
-          />
+          {selectedImage.type === 'video' ? (
+            <video
+              src={selectedImage.src}
+              className="max-w-full max-h-[90vh] object-contain rounded shadow-2xl"
+              controls
+              autoPlay
+              onClick={(e) => e.stopPropagation()}
+            />
+          ) : (
+            <img
+              src={selectedImage.src}
+              alt={selectedImage.alt}
+              className="max-w-full max-h-[90vh] object-contain rounded shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+          )}
         </div>
       )}
     </div>

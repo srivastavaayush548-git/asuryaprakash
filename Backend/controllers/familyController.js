@@ -52,7 +52,7 @@ exports.deleteSection = async (req, res) => {
 exports.updateSectionsOrder = async (req, res) => {
     try {
         const { sections } = req.body;
-        const updatePromises = sections.map(sec => 
+        const updatePromises = sections.map(sec =>
             FamilySection.findByIdAndUpdate(sec.id, { order: sec.order })
         );
         await Promise.all(updatePromises);
@@ -69,22 +69,23 @@ exports.saveImage = async (req, res) => {
         const section = await FamilySection.findById(req.params.sectionId);
         if (!section) return res.status(404).json({ message: 'Section not found' });
 
-        let { id, title, src, order } = req.body;
-        
+        let { id, title, src, order, type } = req.body;
+
         let imageUrl = src;
-        if (src && src.startsWith('data:image')) {
-            imageUrl = await uploadToCloudinary(src, 'family');
+        if (src && src.startsWith('data:')) {
+            const resType = src.includes('video') ? 'video' : 'image';
+            imageUrl = await uploadToCloudinary(src, 'family', resType);
         }
 
         if (id) {
             // Update existing
             const imageIndex = section.images.findIndex(img => img._id.toString() === id || img.id === id);
             if (imageIndex !== -1) {
-                section.images[imageIndex] = { ...section.images[imageIndex], title, src: imageUrl, order };
+                section.images[imageIndex] = { ...section.images[imageIndex].toObject(), title, src: imageUrl, order, type };
             }
         } else {
             // Add new
-            section.images.push({ title, src: imageUrl, order });
+            section.images.push({ title, src: imageUrl, order, type });
         }
 
         await section.save();

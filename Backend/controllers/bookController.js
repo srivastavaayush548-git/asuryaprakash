@@ -50,7 +50,7 @@ exports.deleteSection = async (req, res) => {
 exports.updateSectionsOrder = async (req, res) => {
     try {
         const { sections } = req.body;
-        const updatePromises = sections.map(sec => 
+        const updatePromises = sections.map(sec =>
             BookSection.findByIdAndUpdate(sec.id, { order: sec.order })
         );
         await Promise.all(updatePromises);
@@ -67,34 +67,35 @@ exports.saveBook = async (req, res) => {
         const section = await BookSection.findById(req.params.sectionId);
         if (!section) return res.status(404).json({ message: 'Section not found' });
 
-        let { 
-            id, title, author, description, cover, 
-            pages, published, language, purchaseLink, 
-            readOnline, order 
+        let {
+            id, title, author, description, cover,
+            pages, published, language, purchaseLink,
+            readOnline, order, type
         } = req.body;
-        
+
         let coverUrl = cover;
         if (cover && cover.startsWith('data:')) {
-            coverUrl = await uploadToCloudinary(cover, 'books/covers', 'image');
+            const resType = cover.includes('video') ? 'video' : 'image';
+            coverUrl = await uploadToCloudinary(cover, 'books/covers', resType);
         }
 
         if (id) {
             // Update existing
             const itemIndex = section.books.findIndex(b => b._id.toString() === id);
             if (itemIndex !== -1) {
-                section.books[itemIndex] = { 
-                    ...section.books[itemIndex], 
-                    title, author, description, cover: coverUrl, 
-                    pages, published, language, purchaseLink, 
-                    readOnline, order 
+                section.books[itemIndex] = {
+                    ...section.books[itemIndex].toObject(),
+                    title, author, description, cover: coverUrl,
+                    pages, published, language, purchaseLink,
+                    readOnline, order, type
                 };
             }
         } else {
             // Add new
-            section.books.push({ 
-                title, author, description, cover: coverUrl, 
-                pages, published, language, purchaseLink, 
-                readOnline, order 
+            section.books.push({
+                title, author, description, cover: coverUrl,
+                pages, published, language, purchaseLink,
+                readOnline, order, type
             });
         }
 
